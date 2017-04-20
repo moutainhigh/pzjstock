@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.write.SkuRuleRelWriteMapper">
+
+	<!-- 批量添加产品与库存规则的关联关系 -->
+	<insert id="addBatchSkuRuleRel" parameterType="java.util.List">
+		insert into tmp_sku_rule_rel (
+			pro_id,
+			rule_id
+		) values
+		<foreach collection="list" item="rel"  separator="," >
+			(${rel.productId},${rel.ruleId})
+		</foreach>
+	</insert>
+	
+	<delete id="clearSkuAndRuleRel">
+		delete from tmp_sku_rule_rel 
+	</delete>
+</mapper>

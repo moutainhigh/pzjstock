@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.read.AreaReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.product.entity.Area">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="scenic_id" property="scenicId" jdbcType="BIGINT" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, scenic_id, code, name,
+		create_time,update_time
+	</sql>
+	<!-- 主键查询 -->
+	<select id="selectAreaById" resultMap="BaseResultMap_optimized"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List_optimized" />
+		from prod_area
+		where id = #{areaId}
+	</select>
+	
+	<!-- 查询区域通过区域ID集合-->
+	<select id="queryAreaByIds" resultMap="BaseResultMap_optimized" parameterType="java.util.List">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			prod_area
+		where 
+			id 
+		in
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>	
+	</select>
+
+	<!-- 根据参数查询 -->
+	<select id="selectAreasByParam" resultMap="BaseResultMap_optimized"
+		parameterType="com.pzj.core.product.entity.Area">
+		select
+		<include refid="Base_Column_List_optimized" />
+		from prod_area
+		<trim prefixOverrides="and">
+			<where>
+				<if test="area != null ">
+					<if test="area.id != null">
+						and id = #{area.id}
+					</if>
+					<if test="area.scenicId != null">
+						and scenic_id = #{area.scenicId}
+					</if>
+					<if test="area.code != null">
+						and code = #{area.code}
+					</if>
+					<if test="area.name != null">
+						and name = #{area.name}
+					</if>
+					<if test="area.areaNameList != null and area.areaNameList.size > 0">
+						and name in
+						<foreach collection="area.areaNameList" index="index" item="item" open="(" separator="," close=")">
+				            #{item}
+				        </foreach>
+					</if>
+				</if>
+				or 1=2
+			</where>
+		</trim>
+	</select>
+</mapper>

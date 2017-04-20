@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.write.StockSeatRelWriteMapper">
+	<!-- 批量添加库存关联座位图集合 -->
+	<insert id="addBatch" parameterType="java.util.List">
+		insert into stock_seat_rel (
+			stock_id, 
+			state,
+			seat_num, 
+			transaction_id, 
+			product_id,
+			operate_user_id,
+			create_time
+		) values
+		<foreach collection="list" item="stockSeatRel" separator=",">
+		(
+			#{stockSeatRel.stockId},
+			#{stockSeatRel.state},
+			#{stockSeatRel.seatNum},
+			#{stockSeatRel.transactionId},
+			#{stockSeatRel.productId},
+			#{stockSeatRel.operateUserId},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+
+	<!-- 修改库存票状态 -->
+	<update id="batchUpdateStockSeatState" parameterType="java.util.List">
+		update
+			stock_seat_rel
+		set
+			state = 2,
+			update_time = sysdate()
+		where
+			id
+		in
+			<foreach collection="list" item="stockSeat" open="(" separator="," close=")">
+				#{stockSeat.id}
+			</foreach>
+	</update>
+	
+	<delete id="rollbackTransactionSeatInfo">
+		delete from
+			stock_seat_rel
+		where
+			transaction_id = #{transactionId}
+	</delete>
+</mapper>

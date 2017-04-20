@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.read.AreaScreeingsRelReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.product.entity.AreaScreeingsRel">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="acting_id" property="actingId" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="screeings_id" property="screeingsId" jdbcType="BIGINT" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="area_name" property="areaName" jdbcType="VARCHAR" />
+		<result column="screeings_name" property="screeingsName"
+			jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, acting_id, area_id, screeings_id,
+		state
+	</sql>
+	
+	<select id="queryAvaibleAreaScreeingsRelByUniqueKey" resultMap="BaseResultMap_optimized">
+		select
+			pas.id,
+			pas.state,
+			pas.acting_id,
+			pas.area_id,
+			pas.screeings_id
+		from
+			prod_area_screeings pas
+		inner join
+			prod_acting pa
+		on
+			pas.acting_id = pa.id
+		and
+			pa.scenic_id=#{scenicId}
+		and
+			pa.supplier_id=#{supplierId}
+		and
+			pa.state = 1
+		where
+			pas.area_id = #{areaId}
+		and
+			pas.screeings_id = #{screeingsId}
+		and
+			pas.state = 1
+		limit 1;
+	</select>
+	
+
+	<!-- 主键查询 -->
+	<select id="selectAreaScreeingsRelById" resultMap="BaseResultMap_optimized"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List_optimized" />
+		from prod_area_screeings
+		where id = #{areaScreeingsRelId}
+	</select>
+	
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_createProdct">
+		id, area_id, screeings_id,acting_id,
+		state,area_name,screeings_name
+	</sql>
+	
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_createProdct" type="com.pzj.core.product.entity.AreaScreeingsRel">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="screeings_id" property="screeingsId" jdbcType="BIGINT" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="area_name" property="areaName" jdbcType="VARCHAR" />
+		<result column="screeings_name" property="screeingsName"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- 根据演艺id集合查询 -->
+	<select id="selectAreaScreeingsRelByActingIds" resultMap="BaseResultMap_createProdct"
+		parameterType="java.util.List">
+		select
+			<include refid="Base_Column_List_createProdct" />
+		from prod_area_screeings
+		where 
+			acting_id in (
+		<foreach collection="list" item="value" separator=",">
+			#{value}
+		</foreach>
+		)
+	</select>
+</mapper>

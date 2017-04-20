@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.AreaScreeingsRelWriteMapper">
+	<sql id="base_list">
+		acting_id,
+		area_id,
+		area_name,
+		screeings_id,
+		screeings_name,
+		state,
+		create_time
+	</sql>
+	
+	<!-- 批量插入操作 -->
+	<insert id="insertRelBatch" parameterType="java.util.List" >
+		insert into prod_area_screeings
+		(
+			<include refid="base_list" />
+		)
+		values
+		<foreach collection="list" item="rel" separator=",">
+		(
+			#{rel.actingId},
+			#{rel.areaId},
+			#{rel.areaName},
+			#{rel.screeingsId},
+			#{rel.screeingsName},
+			#{rel.state},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+	<!-- 根据演艺ID删除所有 -->
+	<delete id="deleteRelByActingId" parameterType="java.lang.Long">
+		delete from
+		prod_area_screeings
+		where acting_id = #{actingId}
+	</delete>
+</mapper>

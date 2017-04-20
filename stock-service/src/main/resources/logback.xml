@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration debug="false" scan="true">
+	<property name="log.path" value="../logs" />
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%5p] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="stock-data" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="com.pzj.framework.logger.filter.ThresholdFilter">
+			<level>warn</level>
+			<rebel>true</rebel>
+		</filter>
+		<file>${log.path}/stock-data.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/stock-data-%d{yyyyMMdd}.log</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%-5p] [%t] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="stock-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="com.pzj.framework.logger.filter.ThresholdFilter" />
+		<file>${log.path}/stock-error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/stock-error-%d{yyyyMMdd}.log</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%-5p] [%t] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.pzj.core" level="info" additivity="false">
+		<appender-ref ref="stock-data" />
+		<appender-ref ref="stock-error" />
+		<appender-ref ref="stdout" />
+	</logger>
+	
+	<logger name="com.pzj.orange.client" level="debug" additivity="false">
+		<appender name="orange-client" class="ch.qos.logback.core.rolling.RollingFileAppender" >
+	        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	            <fileNamePattern>${log.path}/callrecord/stock.callrecord.%d{yyyy-MM-dd}.log</fileNamePattern>
+	        </rollingPolicy>
+	        <encoder>
+	            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+	        </encoder>
+	    </appender>
+	</logger>
+
+	<logger name="org.springframework" level="info" />
+	<logger name="com.alibaba" level="info" />
+	<logger name="org.apache" level="info" />
+	<logger name="org.I0Itec.zkclient" level="warn" />
+
+	<root level="info">
+		<appender-ref ref="stdout" />
+	</root>
+</configuration>

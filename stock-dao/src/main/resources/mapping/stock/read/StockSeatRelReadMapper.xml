@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.read.StockSeatRelReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.stock.entity.StockSeatRel">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="stock_id" property="stockId" jdbcType="BIGINT" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="seat_num" property="seatNum" jdbcType="VARCHAR" />
+		<result column="transaction_id" property="transactionId" jdbcType="VARCHAR" />
+		<result column="product_id" property="productId" jdbcType="BIGINT" />
+		<result column="operate_user_id" property="operateUserId" jdbcType="BIGINT" />
+	</resultMap>
+	
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, stock_id, state, seat_num, transaction_id, operate_user_id, product_id
+	</sql>
+	
+	<!-- 统计当前业务id占座数量 -->
+	<select id="countSeatNumByServiceId" resultType="int">
+		select
+			count(id)
+		from
+			stock_seat_rel
+		where
+			transaction_id = #{serviceId}
+		and
+			state = 1
+	</select>
+	
+	<!-- 根据库存和当前传入座位查占座数量 -->
+	<select id="queryByStockAndSeats" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			stock_id,
+			seat_num,
+			transaction_id,
+			operate_user_id
+		from
+			stock_seat_rel
+		where
+			stock_id = #{stockId}
+		and
+			state = 1
+		and
+			seat_num
+		in
+			<foreach collection="seats" item="seat" open="(" separator="," close=")">
+				#{seat}
+			</foreach>
+	</select>
+	
+	<!-- 查询当前业务id占座信息 -->
+	<select id="querySeatByBussId" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			stock_id,
+			seat_num
+		from
+			stock_seat_rel
+		where
+			transaction_id = #{serviceId}
+		and
+			state = 1
+	</select>
+	
+	<!-- 查询已占座位集合 -->
+	<select id="querySeatNumByStockId" resultType="java.lang.String">
+		select
+			seat_num
+		from
+			stock_seat_rel
+		where
+			stock_id = #{stockId}
+		and
+			state = 1
+	</select>
+
+
+</mapper>

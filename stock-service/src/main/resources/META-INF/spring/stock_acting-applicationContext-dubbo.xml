@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 演艺服务 BEGIN -->
+	<dubbo:service interface="com.pzj.core.product.service.AreaService"
+		ref="areaService" />
+	<dubbo:service interface="com.pzj.core.product.service.AreaQueryService"
+		ref="areaQueryService" />
+
+	<dubbo:service interface="com.pzj.core.product.service.ScreeingsService"
+		ref="screeingsService" />
+	<dubbo:service interface="com.pzj.core.product.service.ScreeingsQueryService"
+		ref="screeingsQueryService" />
+
+	<dubbo:service interface="com.pzj.core.product.service.ActingService"
+		ref="actingService" />
+	<dubbo:service interface="com.pzj.core.product.service.ActingQueryService"
+		ref="actingQueryService" />
+	<!-- 演艺服务 END -->
+
+	<!-- 演艺产品服务 -->
+	<dubbo:service interface="com.pzj.core.product.service.ActingProductService"
+		ref="actingProductService" />
+
+</beans>

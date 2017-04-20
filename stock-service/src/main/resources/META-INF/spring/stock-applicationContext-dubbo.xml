@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 访问日志 -->
+	<dubbo:protocol accesslog="false" />
+	<!-- <context:property-placeholder location="classpath*:dubbo.properties"
+		ignore-unresolvable="true" /> -->
+		
+	<dubbo:application name="${dubbo.application.name}" />
+
+	<dubbo:registry id="stock_provider" address="${dubbo.registry.address}"
+		check="false" />
+	<dubbo:registry id="stock_consumer" address="${zookeeper.address.dev}"
+		check="false" />
+
+
+	<!-- 查询库存服务接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.StockQueryService"
+		ref="stockQueryService" registry="stock_provider" />
+
+	<!-- 操作库存服务接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.StockService"
+		ref="stockService" registry="stock_provider" />
+
+	<!-- 查询库存规则接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.StockRuleQueryService"
+		ref="stockRuleQueryService" registry="stock_provider" />
+
+	<!-- 操作库存规则接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.StockRuleService"
+		ref="stockRuleService" registry="stock_provider" />
+
+	<!-- 操作座位接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.ShowService"
+		ref="showService" registry="stock_provider" />
+
+	<!-- 解析座位接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.SeatService"
+		ref="seatService" registry="stock_provider" />
+
+	<!-- 解析座位接口 -->
+	<dubbo:service interface="com.pzj.core.stock.service.SeatChartService"
+		ref="seatChartService" registry="stock_provider" />
+
+	<!-- 库存定时任务 -->
+	<dubbo:service interface="com.pzj.core.stock.service.StockBottomService"
+		ref="stockBottomService" registry="stock_provider" />
+
+	<!-- 库存依赖产品服务 -->
+	<dubbo:reference interface="com.pzj.core.stock.service.ISkuStockService"
+		id="skuStockService" version="2.0" registry="stock_consumer" check="false" />
+
+	<!-- 库存依赖对接系统服务 -->
+	<dubbo:reference interface="com.pzj.dock.supplier.service.ISeatDockingService"
+		id="seatDockingService" version="1.0" registry="stock_consumer"
+		check="false" />
+</beans>

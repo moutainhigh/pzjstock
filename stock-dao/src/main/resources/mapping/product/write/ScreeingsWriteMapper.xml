@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.ScreeingsWriteMapper">
+	<!-- 主键删除 -->
+	<delete id="deleteScreeingsById" parameterType="java.lang.Long">
+		delete from
+		prod_screeings
+		where id = #{id}
+	</delete>
+	
+	<!-- 新增 -->
+	<insert id="insertScreeings" parameterType="com.pzj.core.product.entity.Screeings" useGeneratedKeys="true" keyProperty="id">
+		insert into
+		prod_screeings (
+			code,
+			name,
+			scenic_id,
+			start_time,
+			end_time,
+			end_sale_time,
+			create_time
+		)
+		values
+		(
+			#{code},
+			#{name},
+			#{scenicId},
+			#{startTime},
+			#{endTime},
+			#{endSaleTime},
+			sysdate()
+		)
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="addBatchScreeings" parameterType="list">
+		insert into prod_screeings (
+			code,
+			name,
+			scenic_id,
+			start_time,
+			end_time,
+			end_sale_time,
+			create_time
+		) values
+		<foreach collection="list" item="screeings" separator=",">
+		(
+			#{screeings.code},
+			#{screeings.name},
+			#{screeings.scenicId},
+			#{screeings.startTime},
+			#{screeings.endTime},
+			#{screeings.endSaleTime},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+	
+	<!-- 更新  -->
+	<update id="updateScreeingsById" parameterType="com.pzj.core.product.entity.Screeings">
+		update prod_screeings
+		<set>
+			<if test="code != null">
+				code = #{code},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="scenicId != null">
+				scenic_id = #{scenicId},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime},
+			</if>
+			<if test="endSaleTime != null">
+				end_sale_time = #{endSaleTime},
+			</if>
+			update_time = sysdate(),
+		</set>
+		where id = #{id}
+	</update>
+	
+</mapper>

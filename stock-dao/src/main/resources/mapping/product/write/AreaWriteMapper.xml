@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.pzj.core.product.write.AreaWriteMapper">
+	
+	<!-- 主键删除 -->
+	<delete id="deleteAreaById" parameterType="java.lang.Long">
+		delete from
+		prod_area
+		where id = #{id}
+	</delete>
+
+	<!-- 新增 -->
+	<insert id="insertArea" parameterType="com.pzj.core.product.entity.Area" useGeneratedKeys="true" keyProperty="id">
+		insert into prod_area (
+			scenic_Id,
+			code, 
+			name,
+			create_time
+		)
+		values
+		(
+			#{scenicId},
+			#{code},
+			#{name},
+			sysdate()
+		)
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="addBatchArea" parameterType="list">
+		insert into prod_area (
+			scenic_id, 
+			name,
+			code,
+			create_time
+		) values
+		<foreach collection="list" item="area" separator=",">
+		(
+			#{area.scenicId},
+			#{area.name},
+			#{area.code},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+	
+	<!-- 更新字段 -->
+	<update id="updateAreaById" parameterType="com.pzj.core.product.entity.Area">
+		update prod_area
+		<set>
+			<if test="scenicId != null">
+				scenic_id = #{scenicId},
+			</if>
+			<if test="code != null">
+				code = #{code},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			update_time = sysdate(),
+		</set>
+		where id = #{id}
+	</update>
+</mapper>

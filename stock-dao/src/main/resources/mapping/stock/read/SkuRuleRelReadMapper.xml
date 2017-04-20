@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.read.SkuRuleRelReadMapper">
+	
+
+	<select id="selectAllRuleOrderedIds" resultType="long">
+		select distinct( rule_id ) from tmp_sku_rule_rel ORDER BY rule_id ASC
+	</select>
+</mapper>

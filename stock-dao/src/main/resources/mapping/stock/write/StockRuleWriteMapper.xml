@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.write.StockRuleWriteMapper">
+
+	<!-- 新增 -->
+	<insert id="insertStockRule" parameterType="com.pzj.core.stock.entity.StockRule" useGeneratedKeys="true" keyProperty="id">
+		insert into stock_rule (
+			state,
+			name,
+			category,
+			type,
+			upper_limit,
+			supplier_id,
+			whether_return,
+			create_time
+		)
+		values
+		(
+			#{state},
+			#{name},
+			#{category},
+			#{type},
+			#{upperLimit},
+			#{supplierId},
+			#{whetherReturn},
+			sysdate()
+		)
+	</insert>
+
+	<!-- 更新非空字段 -->
+	<update id="updateStockRuleById" parameterType="com.pzj.core.stock.entity.StockRule">
+		update stock_rule
+		<set>
+			<if test="state != null">
+				state = #{state},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="category != null">
+				category = #{category},
+			</if>
+			<if test="type != null">
+				type = #{type},
+			</if>
+			<if test="upperLimit != null">
+				upper_limit = #{upperLimit},
+			</if>
+			<if test="supplierId != null">
+				supplier_id = #{supplierId},
+			</if>
+			<if test="whetherReturn != null">
+				whether_return = #{whetherReturn},
+			</if>
+				update_time = sysdate(),
+		</set>
+		where id = #{id}
+	</update>
+
+
+	<!-- 更新非空字段 -->
+	<update id="updateStockRuleStateById" parameterType="com.pzj.core.stock.entity.StockRule">
+		update stock_rule set
+
+		state = #{state}
+
+		where id = #{id}
+	</update>
+	
+	<update id="fakeDeleteStockRule" parameterType="long">
+		update stock_rule set state = 2 where id = #{id}
+	</update>
+	
+	<!-- 更新name -->
+	<update id="updateStockRuleName">
+		update  stock_rule
+		set
+			name = #{name}
+		where
+			id = #{id}
+	</update>
+</mapper>

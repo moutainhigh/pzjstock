@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-4.2.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<context:property-placeholder location="classpath:dubbo.properties" />
+
+	<dubbo:application name="${dubbo.application.name}" />
+	<dubbo:registry address="${acting.dubbo.registry.address}"
+		id="acting" />
+	<!-- 用户服务注册中心 -->
+	<dubbo:registry address="${user.dubbo.registry.address}"
+		id="user" />
+	<!-- 景区服务注册中心 -->
+	<dubbo:registry address="${scenic.dubbo.registry.address}"
+		id="scenic" />
+
+	<dubbo:consumer check="${acting.dubbo.check}" />
+
+	<!-- 演艺服务 BEGIN -->
+	<dubbo:reference id="actingProductService"
+		interface="com.pzj.core.product.service.ActingProductService"
+		registry="acting" version="${acting.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" url="${dubbo.url}"/>
+
+	<dubbo:reference id="areaService"
+		interface="com.pzj.core.product.service.AreaService" registry="acting"
+		version="${acting.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" url="${dubbo.url}"/>
+		
+	<dubbo:reference id="areaQueryService"
+		interface="com.pzj.core.product.service.AreaQueryService" registry="acting"
+		version="${acting.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" url="${dubbo.url}"/>
+
+	<dubbo:reference id="screeingsService"
+		interface="com.pzj.core.product.service.ScreeingsService" registry="acting"
+		version="${acting.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" url="${dubbo.url}"/>
+
+	<dubbo:reference id="actingService"
+		interface="com.pzj.core.product.service.ActingService" registry="acting"
+		version="${acting.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" url="${dubbo.url}"/>
+	<!-- 演艺服务 END -->
+
+	<!-- 库存服务 -->
+	<dubbo:reference id="seatChartService"
+		interface="com.pzj.core.stock.service.SeatChartService" registry="acting"
+		version="${acting.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" url="${dubbo.url}"/>
+
+
+	<!-- 用户服务 -->
+	<dubbo:reference id="userService"
+		interface="com.pzj.base.service.sys.IUserService" registry="user"
+		version="${user.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" />
+
+	<!-- 景区服务 -->
+	<!-- <dubbo:reference id="productScenicService"
+		interface="com.pzj.base.service.product.IProductScenicService"
+		registry="scenic" version="${scenic.dubbo.service.version}" retries="${acting.dubbo.retries}"
+		check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}" /> -->
+		
+	<dubbo:reference interface="com.pzj.core.product.common.service.IProductScenicService" id="productScenicService" 
+	registry="scenic" version="${scenic.dubbo.service.version}" check="${acting.dubbo.check}" timeout="${acting.dubbo.timeout}"/>
+	
+</beans>
