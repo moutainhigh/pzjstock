@@ -1,0 +1,10 @@
+{
+  "testData": {
+    "id": 1747,
+    "name": "smithN",
+    "nameAbbr": "sirN",
+    "beginTime": "2:25:00",
+    "endTime": "4:25:00"
+  },
+  "testDataClass": "com.pzj.core.product.model.screeings.ModifyScreeningReqModel"
+}

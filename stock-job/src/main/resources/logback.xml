@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration debug="false" scan="true">
+	
+	<property name="log.path" value="../logs" />
+	
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%5p] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="stock-job"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${log.path}/stock-job.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/stock-job.log.%d{yyyyMMdd}</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%5p] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.pzj.core.stock.job" level="debug" additivity="true">
+		<appender-ref ref="stock-job" />
+	</logger>
+
+	<root level="debug">
+		<appender-ref ref="stdout" />
+	</root>
+</configuration>

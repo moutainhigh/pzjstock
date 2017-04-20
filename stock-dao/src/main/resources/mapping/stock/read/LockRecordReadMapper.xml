@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.read.LockRecordReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.stock.entity.LockRecord">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="stock_id" property="stockId" jdbcType="BIGINT" />
+		<result column="transaction_id" property="transactionId" jdbcType="VARCHAR" />
+		<result column="product_id" property="productId" jdbcType="BIGINT" />
+		<result column="lock_num" property="lockNum" jdbcType="INTEGER" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+	</resultMap>
+	
+	
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, stock_id, transaction_id, product_id,lock_num, operator_id
+	</sql>
+
+	<!-- 判断是否存在库存被锁定的记录 -->
+	<select id="existLocked" resultType="int">
+		select
+			count(id)
+		from
+			stock_lock_record
+		where
+			transaction_id = #{transactionId}
+		and
+			product_id = #{productId}
+	</select>
+
+	<!-- 查询已锁定的库存记录 -->
+	<select id="queryLockedRecord" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			stock_id,
+			transaction_id,
+			product_id,
+			lock_num
+		from
+			stock_lock_record
+		where
+			transaction_id = #{transactionId}
+		and
+			product_id = #{productId}
+	</select>
+
+	<!-- 查询用户锁库存记录集合 -->
+	<select id="queryLockRecordByUser" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			stock_id,
+			lock_num
+		from
+			stock_lock_record
+		where
+			operator_id=#{operatorId}
+		and
+			biz_type=#{bizType}
+		and
+			stock_id
+		in
+		<foreach collection="stockIds" index="index" item="item" open="(" separator="," close=")">
+			${item}
+		</foreach>
+	</select>
+
+
+	<select id="selectLockRecordById" resultMap="BaseResultMap_optimized" parameterType="java.lang.Long">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			stock_lock_record
+		where 
+			id = #{lockRecordId}
+	</select>
+
+	<!-- 根据参数查询锁库存记录集合 -->
+	<select id="selectLockRecordListByParam" resultMap="BaseResultMap_optimized" parameterType="com.pzj.core.stock.entity.LockRecord">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			stock_lock_record
+		<where>
+			<if test="null != stockId">
+				and stock_id = #{stockId}
+			</if>
+			<if test="null != transactionId and transactionId != ''">
+				and transaction_id = #{transactionId}
+			</if>
+			<if test="null != productId">
+				and product_id = #{productId}
+			</if>
+			<if test="null != id">
+				and id = #{id}
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询 锁库存记录通过交易号-->
+	<select id="queryStockRecordByTranId" resultMap="BaseResultMap_optimized">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from
+			stock_lock_record
+		where
+			transaction_id =#{transactionId}
+	</select>
+</mapper>

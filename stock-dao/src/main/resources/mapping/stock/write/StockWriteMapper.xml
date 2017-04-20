@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.write.StockWriteMapper">
+	<resultMap type="com.pzj.core.stock.entity.Stock" id="stockOperateMap">
+		<id column="id" property="id" />
+		<result column="rule_id" property="ruleId" />
+		<result column="state" property="state" />
+		<result column="total_num" property="totalNum" />
+		<result column="used_num" property="usedNum" />
+		<result column="remain_num" property="remainNum" />
+	</resultMap>
+ 
+	
+	<!-- 批量新增 -->
+	<insert id="insertStockBatch" parameterType="list">
+		insert into stock (
+			rule_id, 
+			state,
+			stock_time, 
+			total_num,
+			remain_num, 
+			create_time
+		) values
+		<foreach collection="list" item="stock" separator=",">
+		(
+			#{stock.ruleId},
+			#{stock.state},
+			#{stock.stockTime},
+			#{stock.totalNum},
+			#{stock.remainNum},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+	
+	<!-- 新增库存  -->
+	<insert id="insertStock" parameterType="com.pzj.core.stock.entity.Stock" useGeneratedKeys="true" keyProperty="id">
+		insert into stock (
+			rule_id,
+			state,
+			stock_time,
+			total_num,
+			remain_num,
+			create_time
+		) values (
+			#{ruleId},
+			#{state},
+			#{stockTime},
+			#{totalNum},
+			#{remainNum},
+			sysdate()
+		)
+	</insert>
+
+	<!-- 更新库存使用量、剩余量. -->
+	<update id="updateStockNum">
+		update 
+			stock
+		set
+			used_num = #{usedNum},
+			remain_num = #{remainNum},
+			update_time = sysdate()
+		where
+			id = #{stockId}
+	</update>
+	
+	<!-- 主键批量查询 FOR UPDATE -->
+	<select id="queryStockByIdsForUpdate" resultMap="stockOperateMap">
+		select
+			id,
+			state,
+			used_num,
+			remain_num,
+			total_num,
+			rule_id,
+			stock_time
+		from 
+			stock
+		where 
+			id 
+		in
+		<foreach collection="stockIds" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		FOR UPDATE
+	</select>
+	
+	<!-- 主键查询 FOR UPDATE -->
+	<select id="queryStockByIdForUpdate" resultMap="stockOperateMap">
+		select
+			id,
+			rule_id,
+			state,
+			used_num,
+			remain_num,
+			total_num,
+			stock_time
+		from 
+			stock
+		where
+			id  = #{stockId}
+		FOR UPDATE
+	</select>
+
+	<select id="selectStockByRuleIdDate" resultMap="stockOperateMap">
+		select
+			id,
+			rule_id,
+			state,
+			used_num,
+			remain_num,
+			total_num,
+			stock_time
+		from
+			stock
+		where rule_id = #{ruleId, jdbcType=BIGINT}
+		<if test="stockTime != null">
+			and stock_time = #{stockTime, jdbcType=INTEGER}
+		</if>
+	</select>
+
+	<!-- 批量修改库存数量 -->
+	<update id="batchUpdateStockNum" parameterType="java.util.List">
+		<foreach collection="list" item="stock" separator=";">
+			update
+				stock
+			set
+				used_num=#{stock.usedNum},
+				remain_num=#{stock.remainNum},
+				update_time = sysdate()
+			where
+				id=#{stock.id}
+		</foreach>
+	</update>
+	
+	<!-- 根据库存规则id 修改库存的状态 -->
+	<update id="updateStockStateByStockRuleId" parameterType="com.pzj.core.stock.entity.Stock">
+		update 
+			stock 
+		set
+			state = #{state}
+		where 
+			rule_id = #{ruleId}
+	</update>
+	
+	<!-- 根据库存规则id 修改库存的库存上限 -->
+	<update id="updateStockUpperLimitByStockRuleId" parameterType="com.pzj.core.stock.entity.Stock">
+		update 
+			stock 
+		set
+			total_num = #{upperLimit}
+		where 
+			rule_id = #{ruleId}
+	</update>
+	
+	<update id="updateStockLimitById">
+		update
+			stock
+		set
+			total_num=#{newestNum}
+		where
+			id = #{id}
+	</update>
+</mapper>

@@ -1,0 +1,24 @@
+{
+  "testData": {
+    "seatCharInfos": [{
+      "seatId" : 3794637805846528,
+      "areaId" : 12001,
+      "nameType" : 1,
+      "lineName" : "金1",
+      "columnName" : "金2",
+      "abscissa" : 10,
+      "ordinate" : 10,
+      "seatType" : 2
+    },{
+      "seatId" : 3794637805846529,
+      "areaId" : 12002,
+      "nameType" : 1,
+      "lineName" : "金3",
+      "columnName" : "金4",
+      "abscissa" : 10,
+      "ordinate" : 11,
+      "seatType" : 2
+    }]
+  },
+  "testDataClass": "com.pzj.core.product.model.seat.ModifySeatCharReqModel"
+}

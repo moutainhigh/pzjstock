@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.write.LockRecordWriteMapper">
+	
+	<resultMap type="com.pzj.core.stock.entity.LockRecord" id="lockRecordOperateMap">
+		<id column="id" property="id" />
+		<result column="stock_id" property="stockId" />
+		<result column="lock_num" property="lockNum" />
+		<result column="transaction_id" property="transactionId" jdbcType="VARCHAR" />
+		<result column="product_id" property="productId" jdbcType="BIGINT" />
+	</resultMap>
+	
+	<!-- 新增 -->
+	<insert id="insert" parameterType="com.pzj.core.stock.entity.LockRecord" useGeneratedKeys="true" keyProperty="id">
+		insert into stock_lock_record (
+			stock_id,
+			transaction_id,
+			product_id,
+			biz_type,
+			lock_num,
+			operator_id,
+			create_time,
+			update_time
+		) values (
+			#{stockId},
+			#{transactionId},
+			#{productId},
+			#{bizType},
+			#{lockNum},
+			#{operatorId},
+			sysdate(),
+			sysdate()
+		)
+	</insert>
+	
+	<!-- 更新库存记录锁库存数量. -->
+	<update id="updateLockRecordNum">
+		update 
+			stock_lock_record
+		set
+			lock_num = #{lockNum},
+			update_time = sysdate()
+		where
+			id = #{id}
+	</update>
+	
+	<!-- 根据id查找库存记录并 for update -->
+	<select id="queryLockRecordByIdForUpdate" resultMap="lockRecordOperateMap">
+		select
+			id,
+			stock_id, 
+			lock_num
+		from 
+			stock_lock_record
+		where 
+			id = #{id}
+		FOR UPDATE;
+	</select>
+	
+	<!-- 批量新增 -->
+	<insert id="userAddBatchLock" parameterType="list">
+		insert into stock_lock_record (
+			stock_id, 
+			operator_id,
+			biz_type,
+			lock_num, 
+			create_time
+		) values
+		<foreach collection="list" item="lockRecord" separator=",">
+		(
+			#{lockRecord.stockId},
+			#{lockRecord.operatorId},
+			#{lockRecord.bizType},
+			#{lockRecord.lockNum},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+	
+	<!-- 主键批量查询 FOR UPDATE -->
+	<select id="queryLockRecordByIdsForUpdate" resultMap="lockRecordOperateMap">
+		select
+			id,
+			stock_id,
+			lock_num,
+			transaction_id,
+			product_id
+		from 
+			stock_lock_record
+		where 
+			id 
+		in
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		FOR UPDATE
+	</select>
+	
+	<!-- 批量修改锁库存数量 -->
+	<update id="userUpdateBatchLock" parameterType="java.util.List">
+		<foreach collection="list" item="lockRecord" separator=";">
+			update
+				stock_lock_record
+			set
+				lock_num = #{lockRecord.lockNum},
+				update_time = sysdate()
+			where
+				id=#{lockRecord.id}
+		</foreach>
+	</update>
+	
+	<!-- 删除锁库存记录 -->
+	<delete id="deleteLockRecordById" >
+		delete from
+			stock_lock_record
+		where
+			id = #{id}
+	</delete>
+ 	
+ 	<!-- 批量删除锁库存记录 -->
+ 	<delete id="delBatchLockByIds" parameterType="java.util.List">
+ 		delete from
+			stock_lock_record
+		where
+			id
+		in
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>	
+ 	</delete>
+ 	
+ 	<!-- 批量新增锁库存记录 -->
+ 	<insert id="batchAddStockLockRecord" parameterType="java.util.List">
+ 		insert into stock_lock_record (
+ 			stock_id,
+ 			transaction_id,
+ 			product_id,
+ 			biz_type,
+ 			lock_num,
+ 			operator_id,
+ 			create_time
+ 		) values
+ 		<foreach collection="list" item="lockRecord" separator=",">
+ 		(
+ 			#{lockRecord.stockId},
+ 			#{lockRecord.transactionId},
+ 			#{lockRecord.productId},
+ 			#{lockRecord.bizType},
+ 			#{lockRecord.lockNum},
+ 			#{lockRecord.operatorId},
+ 			sysdate()
+ 		)
+ 		</foreach>
+ 	</insert>
+ 	
+ 	<!-- 优化字段映射 -->
+	<resultMap id="lockRecordMap" type="com.pzj.core.stock.entity.LockRecord">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="stock_id" property="stockId" jdbcType="BIGINT" />
+		<result column="transaction_id" property="transactionId" jdbcType="VARCHAR" />
+		<result column="product_id" property="productId" jdbcType="BIGINT" />
+		<result column="lock_num" property="lockNum" jdbcType="INTEGER" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+	</resultMap>
+	
+ 	<!-- 查询 锁库存记录通过交易号-->
+	<select id="queryStockRecordByTranId" resultMap="lockRecordMap">
+		select
+			id, stock_id, transaction_id, product_id,lock_num, operator_id
+		from
+			stock_lock_record
+		where
+			transaction_id =#{transactionId}
+	</select>
+	
+	<!-- 查询 锁库存记录通过交易号-->
+	<select id="queryLockRecordByTranPro" resultMap="lockRecordMap">
+		select
+			id, stock_id, transaction_id, product_id,lock_num, operator_id
+		from
+			stock_lock_record
+		where
+			transaction_id =#{transactionId}
+		and
+			product_id = #{productId}
+		limit 1
+	</select>
+	
+	<!-- 查询已锁定的库存记录并修改 -->
+	<select id="queryLockedRecordForUpdate" resultMap="lockRecordMap">
+		select
+			id,
+			stock_id,
+			transaction_id,
+			product_id,
+			lock_num
+		from
+			stock_lock_record
+		where
+			transaction_id = #{transactionId}
+		and
+			product_id = #{productId}
+		limit 1
+		FOR UPDATE
+	</select>
+</mapper>

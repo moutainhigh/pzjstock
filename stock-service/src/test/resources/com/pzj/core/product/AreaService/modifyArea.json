@@ -1,0 +1,19 @@
+{
+  "testData": {
+    "theaterId": 22345678,
+    "thumb": "22:25:00",
+    "areaInfos": [{
+      "id" : 3742026757046272,
+      "name" : "VIP区N1",
+      "nameAbbr" : "VIPN1"
+    },{
+      "id" : 3742046101176320,
+      "name" : "VIP区C123",
+      "nameAbbr" : "VIPC123"
+    },{
+      "name" : "VIP区",
+      "nameAbbr" : "VIPC"
+    }]
+  },
+  "testDataClass": "com.pzj.core.product.model.area.ModifyAreaReqModel"
+}

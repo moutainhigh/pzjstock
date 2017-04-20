@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<context:property-placeholder
+		ignore-unresolvable="true" location="classpath*:test-dubbo.properties" />
+
+	<dubbo:registry address="${dubbo.registry.address.local}"
+		check="false" file="false" />
+
+	<dubbo:application name="${dubbo.application.name}" />
+	<dubbo:protocol accesslog="${accesslog.flag}" />
+	<dubbo:consumer check="${consumer.check}" />
+
+	<dubbo:reference id="stockQueryService"
+		interface="com.pzj.core.stock.service.StockQueryService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+	<dubbo:reference id="stockService"
+		interface="com.pzj.core.stock.service.StockService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+
+	<dubbo:reference id="stockRuleQueryService"
+		interface="com.pzj.core.stock.service.StockRuleQueryService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+	<dubbo:reference id="stockRuleService"
+		interface="com.pzj.core.stock.service.StockRuleService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+
+
+	<dubbo:reference id="showService"
+		interface="com.pzj.core.stock.service.ShowService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+
+	<dubbo:reference id="seatService"
+		interface="com.pzj.core.stock.service.SeatService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+
+	<dubbo:reference id="seatChartService"
+		interface="com.pzj.core.stock.service.SeatChartService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+
+	<dubbo:reference id="actingProductService"
+		interface="com.pzj.core.product.service.ActingProductService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+	
+	<!-- 演艺接口 -->
+	<dubbo:reference interface="com.pzj.core.product.service.ScreeingsQueryService"
+		id="screeingsQueryService" check="false" version="1.0" timeout="30000" url="${dubbo.url}"/>
+		
+	<dubbo:reference interface="com.pzj.core.product.service.ScreeingsService"
+		id="screeingsService" check="false" version="1.0" timeout="30000" url="${dubbo.url}"/>
+		
+	<dubbo:reference id="seatRecordService"
+		interface="com.pzj.core.product.service.SeatRecordService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+		
+	<dubbo:reference id="assignedOrderQueryService"
+		interface="com.pzj.core.product.service.AssignedOrderQueryService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+		
+	<dubbo:reference interface="com.pzj.core.product.service.SeatCharService"
+		id="seatCharService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+		
+	<dubbo:reference interface="com.pzj.core.product.service.AreaQueryService"
+		id="areaQueryService" check="false"
+		version="1.0" timeout="30000" url="${dubbo.url}" />
+</beans>

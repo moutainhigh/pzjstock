@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.SeatCharWriteMapper">
+    <!-- 所有字段 -->
+    <sql id="Base_Column_List">
+        seat_id,
+        scenic_id,
+        seat_unique,
+        area_id,
+        abscissa,
+        ordinate,
+        line_name,
+        column_name,
+        type,
+        create_time,
+        update_time
+    </sql>
+
+    <!-- 字段映射 -->
+    <resultMap id="BaseResultMap" type="com.pzj.core.product.entity.SeatChar">
+        <id column="seat_id" property="id" jdbcType="BIGINT" />
+        <result column="scenic_id" property="scenicId" jdbcType="BIGINT" />
+        <result column="seat_unique" property="seatUnique" jdbcType="BIGINT" />
+        <result column="area_id" property="areaId" jdbcType="BIGINT" />
+        <result column="abscissa" property="abscissa" jdbcType="BIGINT" />
+        <result column="ordinate" property="ordinate" jdbcType="BIGINT" />
+        <result column="line_name" property="lineName" jdbcType="BIGINT" />
+        <result column="column_name" property="columnName" jdbcType="INTEGER" />
+        <result column="type" property="type" jdbcType="TINYINT" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <!-- 主键查询 -->
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select <include refid="Base_Column_List" /> from seat_char  where
+        seat_id = #{id, jdbcType=BIGINT}
+    </select>
+
+    <select id="selectSeatCharByIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from seat_char  where
+        seat_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")" >
+            #{item, jdbcType=BIGINT}
+        </foreach>
+    </select>
+
+    <!-- 通用查询条件 -->
+    <sql id="sql_of_where">
+        <if test="bParam != null">
+            <if test="bParam.id != null"> AND seat_id = #{bParam.id, jdbcType=BIGINT}</if>
+            <if test="bParam.scenicId != null"> AND scenic_id = #{bParam.scenicId, jdbcType=BIGINT}</if>
+            <if test="bParam.areaId != null"> AND area_id = #{bParam.areaId, jdbcType=BIGINT}</if>
+            <if test="bParam.abscissa != null"> AND abscissa = #{bParam.abscissa, jdbcType=BIGINT}</if>
+            <if test="bParam.ordinate != null"> AND ordinate = #{bParam.ordinate, jdbcType=BIGINT}</if>
+            <if test="bParam.lineName != null"> AND line_name = #{bParam.lineName, jdbcType=BIGINT}</if>
+            <if test="bParam.columnName != null"> AND column_name = #{bParam.columnName, jdbcType=INTEGER}</if>
+            <if test="bParam.type != null"> AND type = #{bParam.type, jdbcType=TINYINT}</if>
+            <if test="bParam.createTime != null"> AND create_time = #{bParam.createTime, jdbcType=TIMESTAMP}</if>
+            <if test="bParam.updateTime != null"> AND update_time = #{bParam.updateTime, jdbcType=TIMESTAMP}</if>
+        </if>
+    </sql>
+
+    <!-- 具有表别名的通用查询条件 -->
+    <sql id="sql_of_where_alias">
+        <if test="bParam != null">
+            <if test="bParam.id != null"> AND a.seat_id = #{bParam.id, jdbcType=BIGINT}</if>
+            <if test="bParam.scenicId != null"> AND a.scenic_id = #{bParam.scenicId, jdbcType=BIGINT}</if>
+            <if test="bParam.areaId != null"> AND a.area_id = #{bParam.areaId, jdbcType=BIGINT}</if>
+            <if test="bParam.abscissa != null"> AND a.abscissa = #{bParam.abscissa, jdbcType=BIGINT}</if>
+            <if test="bParam.ordinate != null"> AND a.ordinate = #{bParam.ordinate, jdbcType=BIGINT}</if>
+            <if test="bParam.lineName != null"> AND a.line_name = #{bParam.lineName, jdbcType=BIGINT}</if>
+            <if test="bParam.columnName != null"> AND a.column_name = #{bParam.columnName, jdbcType=INTEGER}</if>
+            <if test="bParam.type != null"> AND a.type = #{bParam.type, jdbcType=TINYINT}</if>
+            <if test="bParam.createTime != null"> AND a.create_time = #{bParam.createTime, jdbcType=TIMESTAMP}</if>
+            <if test="bParam.updateTime != null"> AND a.update_time = #{bParam.updateTime, jdbcType=TIMESTAMP}</if>
+        </if>
+    </sql>
+
+    <!-- 通用分页查询 -->
+    <select id="queryByParamMap" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from seat_char a
+        <where>
+            <include refid="sql_of_where_alias" />
+        </where>
+        <if test="pParam != null">
+            <if test="pParam.orderByClause == null"> order by a.id desc </if>
+            <if test="pParam.orderByClause != null"> order by ${pParam.orderByClause} </if>
+            <if test="pParam.startIndex != null and pParam.pageSize != null">
+                limit #{pParam.startIndex} , #{pParam.pageSize}
+            </if>
+        </if>
+    </select>
+
+    <!-- 通用分页查询记录总数 -->
+    <select id="countByParamMap" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select count(a.id) from seat_char a
+        <where>
+            <include refid="sql_of_where_alias" />
+        </where>
+    </select>
+    <select id="selectRepeatSeat" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"/> from seat_char
+        where seat_unique in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.seatUnique, jdbcType=BIGINT}
+        </foreach>
+    </select>
+
+
+    <!-- 插入单条数据 -->
+    <insert id="insert" parameterType="com.pzj.core.product.entity.SeatChar">
+        insert into seat_char
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            seat_id,
+            <if test="scenicId != null">scenic_id,</if>
+            <if test="seatUnique != null">seat_unique,</if>
+            <if test="areaId != null">area_id,</if>
+            <if test="abscissa != null">abscissa,</if>
+            <if test="ordinate != null">ordinate,</if>
+            <if test="nameType != null">name_type,</if>
+            <if test="lineName != null">line_name,</if>
+            <if test="columnName != null">column_name,</if>
+            <if test="type != null">type,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id, jdbcType=BIGINT},
+            <if test="scenicId != null">#{scenicId, jdbcType=BIGINT},</if>
+            <if test="seatUnique != null">#{seatUnique, jdbcType=BIGINT},</if>
+            <if test="areaId != null">#{areaId, jdbcType=BIGINT},</if>
+            <if test="abscissa != null">#{abscissa, jdbcType=BIGINT},</if>
+            <if test="ordinate != null">#{ordinate, jdbcType=BIGINT},</if>
+            <if test="nameType != null">#{nameType, jdbcType=TINYINT},</if>
+            <if test="lineName != null">#{lineName, jdbcType=BIGINT},</if>
+            <if test="columnName != null">#{columnName, jdbcType=INTEGER},</if>
+            <if test="type != null">#{type, jdbcType=TINYINT},</if>
+            <if test="createTime != null">#{createTime, jdbcType=TIMESTAMP},</if>
+            <if test="updateTime != null">#{updateTime, jdbcType=TIMESTAMP},</if>
+        </trim>
+    </insert>
+
+    <!-- 批量插入，请根据业务修改默认值 -->
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into seat_char ( <include refid="Base_Column_List"/> )
+        values
+        <foreach collection="list" item="item" separator="," >
+            (
+            #{item.id, jdbcType=BIGINT}
+            <choose><when test="item.scenicId != null">, #{item.scenicId, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.seatUnique != null">, #{item.seatUnique, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.areaId != null">, #{item.areaId, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.abscissa != null">, #{item.abscissa, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.ordinate != null">, #{item.ordinate, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.lineName != null">, #{item.lineName, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.columnName != null">, #{item.columnName, jdbcType=INTEGER}</when><otherwise>,''</otherwise></choose>
+            <choose><when test="item.type != null">, #{item.type, jdbcType=TINYINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.createTime != null">, #{item.createTime, jdbcType=TIMESTAMP}</when><otherwise>,'0000-00-00'</otherwise></choose>
+            <choose><when test="item.updateTime != null">, #{item.updateTime, jdbcType=TIMESTAMP}</when><otherwise>,'0000-00-00'</otherwise></choose>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 更新单条数据 -->
+    <update id="updateByPrimaryKey" parameterType="com.pzj.base.entity.SysMenu">
+        update seat_char
+        <set>
+            <if test="areaId != null">area_id = #{areaId, jdbcType=BIGINT},</if>
+            <if test="abscissa != null">abscissa = #{abscissa, jdbcType=BIGINT},</if>
+            <if test="ordinate != null">ordinate = #{ordinate, jdbcType=BIGINT},</if>
+            <if test="nameType != null">name_type = #{nameType, jdbcType=TINYINT},</if>
+            <if test="lineName != null">line_name = #{lineName, jdbcType=BIGINT},</if>
+            <if test="columnName != null">column_name = #{columnName, jdbcType=INTEGER},</if>
+            <if test="type != null">type = #{type, jdbcType=TINYINT},</if>
+            <if test="updateTime != null">update_time = #{updateTime, jdbcType=TIMESTAMP},</if>
+        </set>
+        .
+        seat_id = #{id, jdbcType=BIGINT}
+    </update>
+
+    <!-- 批量更新 -->
+    <update id="updateBatch" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            update seat_char
+            <set>
+                <if test="item.areaId != null">area_id = #{item.areaId, jdbcType=BIGINT},</if>
+                <if test="item.abscissa != null">abscissa = #{item.abscissa, jdbcType=BIGINT},</if>
+                <if test="item.ordinate != null">ordinate = #{item.ordinate, jdbcType=BIGINT},</if>
+                <if test="item.nameType != null">name_type = #{item.nameType, jdbcType=TINYINT},</if>
+                <if test="item.lineName != null">line_name = #{item.lineName, jdbcType=BIGINT},</if>
+                <if test="item.columnName != null">column_name = #{item.columnName, jdbcType=INTEGER},</if>
+                <if test="item.type != null">type = #{item.type, jdbcType=TINYINT},</if>
+                <if test="item.updateTime != null">update_time = #{item.updateTime, jdbcType=TIMESTAMP},</if>
+            </set>
+            where
+            seat_id = #{item.id, jdbcType=BIGINT}
+        </foreach>
+    </update>
+</mapper>

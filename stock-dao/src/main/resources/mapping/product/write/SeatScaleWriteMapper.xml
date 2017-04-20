@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.SeatScaleWriteMapper">
+	
+	<insert id="insertBatch">
+		INSERT INTO seat_scale(
+			scale_id,
+			type,
+			position,
+			scenic_id,
+			supplier_id,
+			name
+		)
+		VALUES
+		<foreach collection="seatScales" item="seatScale" separator="," >
+		(
+			#{seatScale.id},
+			#{seatScale.type},
+			#{seatScale.position},
+			#{seatScale.scenicId},
+			#{seatScale.supplierId},
+			#{seatScale.name}
+		)
+		</foreach>
+	</insert>
+	
+</mapper>

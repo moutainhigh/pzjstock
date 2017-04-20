@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.read.StockReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.stock.entity.Stock">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="rule_id" property="ruleId" jdbcType="BIGINT" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="stock_time" property="stockTime" jdbcType="INTEGER" />
+		<result column="total_num" property="totalNum" jdbcType="INTEGER" />
+		<result column="used_num" property="usedNum" jdbcType="INTEGER" />
+		<result column="remain_num" property="remainNum" jdbcType="INTEGER" />
+	</resultMap>
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, rule_id, state,
+		stock_time, total_num,
+		used_num,
+		remain_num
+	</sql>
+
+	<!-- 主键查询 -->
+	<select id="selectStockById" resultMap="BaseResultMap_optimized" parameterType="java.lang.Long">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from
+			stock
+		where
+			id = #{stockId}
+	</select>
+
+	<!-- 根据库存参数精确查询 -->
+	<select id="selectStockListByParam" resultMap="BaseResultMap_optimized" parameterType="java.lang.Long">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			stock
+		<include refid="accurate_select" />
+	</select>
+
+	<!-- 精确查询条件 -->
+	<sql id="accurate_select">
+		<trim prefixOverrides="and | or ">
+			<where>
+				<if test="ruleId != null">
+					and rule_id = #{ruleId}
+				</if>
+				<if test=" stockIds != null and stockIds.size() != 0">
+					and id in
+					<foreach collection="stockIds" item="stockid" open="("
+						separator="," close=")">
+						#{stockid}
+					</foreach>
+				</if>
+				<if test="state != null">
+					and state = #{state}
+				</if>
+				<if test="stockTime != null">
+					and stock_time = #{stockTime}
+				</if>
+				<if test=" beginTime != null ">
+					<![CDATA[ and stock_time >= #{beginTime}]]>
+				</if>
+				<if test=" endTime != null ">
+					<![CDATA[ and stock_time <= #{endTime}]]>
+				</if>
+			</where>
+		</trim>
+	</sql>
+
+
+	<select id="selectIdsInRuleIdsAndStockTime" resultType="long">
+		select distinct(rule_id) from stock
+		<trim prefixOverrides="and">
+			<where>
+				<if test="stockTime != null ">
+					and stock_time = #{stockTime}
+				</if>
+				<if test="ruleIds != null and ruleIds.size() != 0 ">
+					and rule_id in
+					<foreach collection="ruleIds" item="ruleId" open="("
+						separator="," close=")">
+						#{ruleId}
+					</foreach>
+				</if>
+				and state = 1
+			</where>
+		</trim>
+	</select>
+	
+	<!-- 通过库存规则ID查询可用库存列表 -->
+	<select id="queryStockByRuleId" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			rule_id,
+			stock_time,
+			total_num,
+			used_num,
+			remain_num
+		from
+			stock
+		where
+			rule_id = #{stockRuleId}
+		and
+			state = 1
+	</select>
+	
+	<!-- 通过多个日期查询库存列表 -->
+	<select id="queryStockByDateList" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			rule_id,
+			stock_time,
+			total_num,
+			used_num,
+			remain_num
+		from
+			stock
+		where
+			rule_id = #{stockRuleId}
+		and
+			state = 1
+		and
+			stock_time
+		in
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+			${item}
+		</foreach>
+	</select>
+	
+	<!-- 通过具体日期 查询库存-->
+	<select id="queryStockByRuleAndTime" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			rule_id,
+			stock_time,
+			total_num,
+			used_num,
+			remain_num
+		from
+			stock
+		where
+			rule_id = #{stockRuleId}
+		and
+			state = 1
+		and
+			stock_time = #{stockTime}
+		limit 1;
+	</select>
+	
+	<!-- 查询供应商实时库存集合 -->
+	<select id="querySupplierRealTimeStock" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			rule_id,
+			state,
+			stock_time,
+			total_num,
+			remain_num
+		from
+			stock
+		where
+			rule_id in
+			<foreach collection="ruleIds" index="index" item="ruleId" open="(" separator="," close=")">
+				#{ruleId}
+			</foreach>
+		and
+			(stock_time = #{stockTime} or stock_time = 0)
+	</select>
+</mapper>

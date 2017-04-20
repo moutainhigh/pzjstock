@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.write.SeatWriteMapper">
+
+	<!-- 批量新增座位 -->
+	<insert id="addBatchSeat" parameterType="java.util.List">
+		insert into stock_seat (
+			seat_chart_id, 
+			seat_num,
+			create_time
+		) values
+		<foreach collection="list" item="seat" separator=",">
+		(
+			#{seat.stockSeatChartId},
+			#{seat.seatNum},
+			sysdate()
+		)
+		</foreach>
+	</insert>
+
+</mapper>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.read.AssignedOrderReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap" type="com.pzj.core.product.entity.AssignedOrder">
+		<id column="assigned_id" property="assignedId" jdbcType="BIGINT" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+		<result column="transaction_id" property="transactionId" jdbcType="VARCHAR" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="area_name" property="areaName" jdbcType="VARCHAR" />
+		<result column="occupied_num" property="occupiedNum" jdbcType="INTEGER" />
+		<result column="un_occupied_num" property="unOccupiedNum" jdbcType="INTEGER" />
+		<result column="spu_id" property="spuId" jdbcType="BIGINT" />
+	</resultMap>
+	
+	<select id="queryAssignedOrdersByModel" resultMap="BaseResultMap">
+		SELECT ao.assigned_id,
+			   ao.area_id,
+			   pa.name AS area_name,
+			   ao.state,
+			   ao.transaction_id,
+			   ao.occupied_num,
+			   ao.un_occupied_num
+			FROM assigned_order ao
+			INNER JOIN prod_area pa
+			ON ao.area_id = pa.id
+			<trim prefixOverrides="and">
+			<where>
+				<if test="assignedOrder != null ">
+					<if test="assignedOrder.screeningId != null">
+						and ao.screening_id = #{assignedOrder.screeningId}
+					</if>
+					<if test="assignedOrder.theaterDate != null">
+						and ao.travel_date = #{assignedOrder.theaterDate}
+					</if>
+				</if>
+				or 1=2
+			</where>
+		</trim>
+	</select>
+	
+	
+	<resultMap id="spuAssignResultMap" type="com.pzj.core.product.entity.AssignedOrder">
+		<id column="assigned_id" property="assignedId" jdbcType="BIGINT" />
+		<result column="screening_id" property="screeningsId" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="screname" property="screName" jdbcType="VARCHAR" />
+		<result column="areaname" property="areaName" jdbcType="VARCHAR" />
+		<result column="assign_num" property="assignNum" jdbcType="INTEGER" />
+		<result column="spu_id" property="spuId" jdbcType="BIGINT" />
+		<result column="travel_date" property="travelDate" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<select id="querySpuAssignByPage" resultMap="spuAssignResultMap">
+		select
+			ao.spu_id,assigned_id,screening_id,area_id,proscre.name as screname,proarea.name as areaname,(un_occupied_num-occupied_num) as assign_num
+		from
+			assigned_order ao
+		inner join
+			(
+				select 
+					distinct spu_id 
+				from 
+					assigned_order 
+				where 
+					state = 1
+				order by 
+					spu_id desc 
+				<if test="pageEntity != null">
+					limit ${pageEntity.startIndex},${pageEntity.pageSize}
+				</if>
+			) pb
+		on 
+			ao.spu_id=pb.spu_id
+		LEFT JOIN 
+			prod_screeings proscre 
+		on 
+			proscre.id=ao.screening_id and proscre.state=1
+		LEFT JOIN 
+			prod_area proarea 
+		on 
+			proarea.id=ao.area_id and proarea.state=1
+		where 
+			ao.state=1 
+		and
+		<![CDATA[
+			ao.occupied_num < ao.un_occupied_num
+		]]>
+		and
+			travel_date = date_format(#{showDate}, '%y-%m-%d')
+		order by 
+			ao.spu_id desc	
+	</select>
+	
+	<select id="countSpuAssign" resultType="java.lang.Integer">
+		select 
+			count(distinct spu_id)
+		from 
+			assigned_order ao
+		where 
+			ao.state=1 
+		and
+		<![CDATA[
+			ao.occupied_num < ao.un_occupied_num
+		]]>
+		and
+			travel_date = date_format(#{showDate}, '%y-%m-%d')
+	</select>
+	
+	<select id="countShowOrder" resultType="java.lang.Integer">
+		select
+			count(distinct transaction_id)
+		from
+			assigned_order
+		where 
+			state=1 
+		and
+			travel_date = date_format(#{showDate}, '%y-%m-%d')
+	</select>
+	
+	<select id="countShowSeat" resultType="java.lang.Integer">
+		select
+			sum(un_occupied_num-occupied_num)
+		from
+			assigned_order
+		where 
+			state=1 
+		and
+			travel_date = date_format(#{showDate}, '%y-%m-%d')
+		and
+			<![CDATA[
+			un_occupied_num > occupied_num
+			]]>
+	</select>
+	
+	<select id="countTotalAssignNum" resultType="java.lang.Integer">
+		select
+			sum(un_occupied_num-occupied_num)
+		from
+			assigned_order
+		where 
+			state=1
+	</select>
+	
+	<select id="queryCalendarAssignCount" resultMap="spuAssignResultMap">
+		select
+			assigned_id,travel_date,sum(un_occupied_num-occupied_num) as assign_num
+		from
+			assigned_order
+		where 
+			state=1 
+		GROUP BY
+			travel_date
+		having
+			assign_num > 0
+		and
+			<![CDATA[
+			travel_date >= #{showStartDate}
+			]]>
+		and
+			<![CDATA[
+			travel_date <= #{showEndDate}
+			]]>
+		order by 
+			travel_date asc
+	</select>
+</mapper>

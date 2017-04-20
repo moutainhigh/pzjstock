@@ -1,0 +1,11 @@
+{
+  "testData": {
+    "theaterId": 22345678,
+    "supplierId": 123456789,
+    "name": "smith",
+    "nameAbbr": "sir",
+    "beginTime": "12:25:00",
+    "endTime": "14:25:00"
+  },
+  "testDataClass": "com.pzj.core.product.model.screeings.CreateScreeningsReqModel"
+}

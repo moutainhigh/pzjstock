@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.read.SeatCharReadMapper">
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.product.entity.SeatChar">
+		<id column="seat_id" property="id" jdbcType="BIGINT" />
+		<result column="scenic_id" property="scenicId" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="abscissa" property="abscissa" jdbcType="INTEGER" />
+		<result column="ordinate" property="ordinate" jdbcType="INTEGER" />
+		<result column="line_name" property="lineName" jdbcType="VARCHAR" />
+		<result column="column_name" property="columnName" jdbcType="VARCHAR" />
+		<result column="seat_name" property="seatName" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="TINYINT" />
+	</resultMap>
+	
+	<!-- 统计区域座位数量 -->
+	<select id="countAreaSeat" resultType="java.lang.Integer">
+		select
+			count(seat_id)
+		from
+			seat_char
+		where
+			type = 1
+		and
+			area_id=#{areaId}
+	</select>
+	
+	<select id="querySeatByArea" resultMap="BaseResultMap_optimized">
+		select
+			seat_id,scenic_id,area_id,abscissa,ordinate,line_name,column_name,type
+		from
+			seat_char
+		where
+			type = 1
+		and
+			area_id=#{areaId}
+	</select>
+	
+	<select id="querySeatByScenic" resultMap="BaseResultMap_optimized">
+		select
+			seat_id,scenic_id,area_id,abscissa,ordinate,line_name,column_name,type
+		from
+			seat_char
+		where
+			type = 1
+		and
+			scenic_id=#{scenicId}
+	</select>
+	
+	<select id="querySeatCharsByModel" resultMap="BaseResultMap_optimized">
+	
+	SELECT seat_id,
+		   scenic_id,
+		   area_id,
+		   abscissa,
+		   ordinate,
+		   line_name,
+		   column_name,
+		   type,
+		   CONCAT(line_name,column_name) as seat_name
+	 FROM seat_char
+		<trim prefixOverrides="and">
+			<where>
+				<if test="seatChar != null ">
+					<if test="seatChar.id != null">
+						and seat_id = #{seatChar.id}
+					</if>
+					<if test="seatChar.scenicId != null">
+						and scenic_id = #{seatChar.scenicId}
+					</if>
+					<if test="seatChar.areaId != null">
+						and area_id = #{seatChar.areaId}
+					</if>
+					<if test="seatChar.type != null">
+						and type = #{seatChar.type}
+					</if>
+				</if>
+				or 1=2
+			</where>
+		</trim>
+	</select>
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.read.StockRuleReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.stock.entity.StockRule">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="category" property="category" jdbcType="INTEGER" />
+		<result column="type" property="type" jdbcType="TINYINT" />
+		<result column="upper_limit" property="upperLimit" jdbcType="INTEGER" />
+		<result column="supplier_id" property="supplierId" jdbcType="BIGINT" />
+		<result column="whether_return" property="whetherReturn" jdbcType="TINYINT" />
+	</resultMap>
+
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, state, name, category, type, upper_limit, supplier_id, whether_return
+	</sql>
+
+	<select id="queryRuleValidateStockById" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			state,
+			type,
+			category,
+			whether_return
+		from
+			stock_rule
+		where
+			id= #{id}
+	</select>
+
+	<!-- 主键查询 -->
+	<select id="selectRuleById" resultMap="BaseResultMap_optimized" parameterType="java.lang.Long">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			stock_rule
+		where 
+			id = #{ruleId}
+	</select>
+
+	<!-- 根据ID及状态查询 -->
+	<select id="selectUsableRule" resultMap="BaseResultMap_optimized">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			stock_rule
+		where 
+			id = #{ruleId} 
+		and 
+			state = #{state}
+	</select>
+
+	<!-- 分页查询 -->
+	<select id="selectRuleByPage" resultMap="BaseResultMap_optimized">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			stock_rule
+			<include refid="base_page_sql" />
+		<if test=" startIndex != null and pageSize != null">
+			limit #{startIndex} ,#{pageSize}
+		</if>
+	</select>
+
+	<!-- 统计查询 -->
+	<select id="countForPage" resultType="int">
+		select 
+			count(id)
+		from 
+			stock_rule
+			<include refid="base_page_sql" />
+	</select>
+
+	<!-- 筛选条件 -->
+	<sql id="base_page_sql">
+		<if test=" stockRule != null ">
+			<trim prefixOverrides="and">
+				<where>
+					<if test=" stockRule.id != null ">
+						id = #{ stockRule.id }
+					</if>
+					<if test=" stockRule.name != null ">
+						and name = #{ stockRule.name }
+					</if>
+					<if test=" stockRule.state != null ">
+						and state = #{ stockRule.state }
+					</if>
+					<if test=" stockRule.vagueName != null ">
+						and name like concat(#{stockRule.vagueName},'%')
+					</if>
+					<if test=" stockRule.category != null ">
+						and category = #{ stockRule.category }
+					</if>
+					<if test=" stockRule.type != null ">
+						and type = #{ stockRule.type }
+					</if>
+					<if test=" stockRule.upperLimit != null ">
+						and upper_limit = #{ stockRule.upperLimit }
+					</if>
+					<if test=" stockRule.supplierId != null ">
+						and supplier_id = #{ stockRule.supplierId }
+					</if>
+					<if test=" stockRule.whetherReturn != null ">
+						and whether_return = #{ stockRule.whetherReturn }
+					</if>
+					<if test=" stockRule.createTime != null ">
+						and create_time = #{ stockRule.createTime }
+					</if>
+					<if test=" stockRule.updateTime != null ">
+						and update_time = #{ stockRule.updateTime }
+					</if>
+					<if test=" null != stockRule.ruleIds and stockRule.ruleIds.size() != 0 ">
+						and id in
+						<foreach collection="stockRule.ruleIds" item="ids" open="(" separator="," close=")">
+							#{ids}
+						</foreach>
+					</if>
+					or 1=2
+				</where>
+			</trim>
+		</if>
+	</sql>
+
+	<!-- 过滤日类型的库存规则 -->
+	<select id="filterDailyRule" parameterType="list" resultType="long">
+		select id from stock_rule where type = 2 and state = 1 and id in
+		<foreach collection="list" item="ruleId" separator="," open="(" close=")">
+			#{ruleId}
+		</foreach>
+	</select>
+
+	<select id="queryStockRuleByIds" resultMap="BaseResultMap_optimized">
+		select
+		<include refid="Base_Column_List_optimized" />
+		from stock_rule where id in
+		<foreach collection="list" item="ruleId" open="(" separator=","
+			close=")">
+			#{ruleId}
+		</foreach>
+	</select>
+	
+	<!-- 查询供应商下关联产品的库存规则列表 -->
+	<select id = "querySupplierStockRules" resultMap="BaseResultMap_optimized">
+		select
+			id,
+			state,
+			name,
+			type,
+			upper_limit,
+			supplier_id
+		from
+			stock_rule
+		where
+			id in
+			<foreach collection="ruleIds" item="ruleId" open="(" separator="," close=")">
+				#{ruleId}
+			</foreach>
+		and
+			supplier_id = #{supplierId}
+	</select>
+	
+	<select id="queryStockRuleNameById" resultType="java.lang.String" parameterType="java.lang.Long">
+		select
+		SUBSTRING_INDEX(name,'-',-1)  from stock_rule
+		where id =  #{id}
+	</select>
+
+	<select id="queryStockRuleNameRepeat"  resultType="int" >
+		select
+		count(id) from stock_rule
+		where id != #{id} and name = #{name}
+	</select>
+</mapper>

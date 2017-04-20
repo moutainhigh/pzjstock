@@ -1,0 +1,23 @@
+{
+  "testData": {
+    "theaterId": 22345678,
+    "seatCharInfos": [{
+      "areaId" : 11001,
+      "nameType" : 0,
+      "lineName" : "金",
+      "columnName" : "金",
+      "abscissa" : 0,
+      "ordinate" : 0,
+      "seatType" : 1
+    },{
+      "areaId" : 11002,
+      "nameType" : 0,
+      "lineName" : "金",
+      "columnName" : "金",
+      "abscissa" : 0,
+      "ordinate" : 1,
+      "seatType" : 1
+    }]
+  },
+  "testDataClass": "com.pzj.core.product.model.seat.CreateSeatCharReqModel"
+}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.pzj.core.product.write.AreaWriteMapper">
+	<sql id="BaseColumns">
+		id, scenic_id, supplier_id, code, name, state, seat_type, seat_mode, thumb, create_time, update_time
+	</sql>
+	<resultMap id="BaseResultMap" type="com.pzj.core.product.entity.Area">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="scenic_id" property="scenicId" jdbcType="BIGINT" />
+		<result column="supplier_id" property="supplierId" jdbcType="BIGINT" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="seat_type" property="seatType" jdbcType="TINYINT" />
+		<result column="seat_mode" property="seatMode" jdbcType="TINYINT" />
+		<result column="thumb" property="thumb" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<select id="countByTheater" resultType="java.lang.Integer">
+		select count(*) from prod_area where scenic_Id = #{param1}
+	</select>
+
+	<select id="selectAreaById" resultMap="BaseResultMap"
+			parameterType="java.lang.Long">
+		select <include refid="BaseColumns" /> from prod_area where id = #{id}
+	</select>
+	<select id="selectAreaByTheater" resultMap="BaseResultMap">
+		select <include refid="BaseColumns"/> from prod_area
+		where scenic_id = #{param1, jdbcType=BIGINT}
+	</select>
+
+	<!-- 主键删除 -->
+	<delete id="deleteAreaById" parameterType="java.lang.Long">
+		delete from prod_area where id = #{id}
+	</delete>
+	<delete id="deleteAreaByTheater">
+		delete from prod_area where scenic_id = #{theaterId, jdbcType=BIGINT}
+	</delete>
+
+	<!-- 新增 -->
+	<insert id="insertArea" parameterType="com.pzj.core.product.entity.Area" useGeneratedKeys="true" keyProperty="id">
+		insert into prod_area (<include refid="BaseColumns"/>)
+		values
+		(
+			#{id, jdbcType=BIGINT},
+			#{scenicId, jdbcType=BIGINT},
+			#{supplierId, jdbcType=BIGINT},
+			#{code, jdbcType=VARCHAR},
+			#{name, jdbcType=VARCHAR},
+			#{state, jdbcType=TINYINT},
+			#{seatType, jdbcType=TINYINT},
+			#{seatMode, jdbcType=TINYINT},
+			#{thumb, jdbcType=VARCHAR},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{updateTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="addBatchArea" parameterType="list">
+		insert into prod_area (<include refid="BaseColumns"/>)
+		values
+		<foreach collection="list" item="area" separator=",">
+		(
+			#{area.id, jdbcType=BIGINT},
+			#{area.scenicId, jdbcType=BIGINT},
+			#{area.supplierId, jdbcType=BIGINT},
+			#{area.code, jdbcType=VARCHAR},
+			#{area.name, jdbcType=VARCHAR},
+			#{area.state, jdbcType=TINYINT},
+			#{area.seatType, jdbcType=TINYINT},
+			#{area.seatMode, jdbcType=TINYINT},
+			#{area.thumb, jdbcType=VARCHAR},
+			#{area.createTime, jdbcType=TIMESTAMP},
+			#{area.updateTime, jdbcType=TIMESTAMP}
+		)
+		</foreach>
+	</insert>
+	
+	<!-- 更新字段 -->
+	<update id="updateAreaById" parameterType="com.pzj.core.product.entity.Area">
+		update prod_area
+		<set>
+			<if test="code != null">
+				code = #{code, jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				state = #{state, jdbcType=TINYINT},
+			</if>
+			<if test="seatType != null">
+				seat_type = #{seatType, jdbcType=TINYINT},
+			</if>
+			<if test="seatMode != null">
+				seat_mode = #{seatMode, jdbcType=TINYINT},
+			</if>
+			<if test="thumb != null">
+				thumb = #{thumb, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime == null">
+				update_time = sysdate()
+			</if>
+		</set>
+		where id = #{id, jdbcType=BIGINT}
+	</update>
+</mapper>

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.AssignedOrderWriteMapper">
+    <!-- 所有字段 -->
+    <sql id="Base_Column_List">
+        assigned_id,
+        state,
+        transaction_id,
+        screening_id,
+        user_id,
+        area_id,
+        occupied_num,
+        un_occupied_num,
+        create_time,
+        travel_date
+    </sql>
+
+    <!-- 字段映射 -->
+    <resultMap id="BaseResultMap" type="com.pzj.core.product.entity.AssignedOrder">
+        <id column="assigned_id" property="assignedId" jdbcType="BIGINT" />
+        <result column="state" property="state" jdbcType="INTEGER" />
+        <result column="transaction_id" property="transactionId" jdbcType="VARCHAR" />
+        <result column="screening_id" property="screeningsId" jdbcType="BIGINT" />
+        <result column="user_id" property="userId" jdbcType="BIGINT" />
+        <result column="area_id" property="areaId" jdbcType="BIGINT" />
+        <result column="occupied_num" property="occupiedNum" jdbcType="INTEGER" />
+        <result column="un_occupied_num" property="unOccupiedNum" jdbcType="INTEGER" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="travel_date" property="travelDate" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <!-- 主键查询 -->
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select <include refid="Base_Column_List" /> from assigned_order  where
+        assigned_id = #{assignedId, jdbcType=BIGINT}
+    </select>
+
+    <!-- 删除 -->
+    <select id="selectAssignedOrderByTransaction" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from assigned_order  where
+        transaction_id = #{transactionId, jdbcType=BIGINT}
+    </select>
+
+    <!-- 通用查询条件 -->
+    <sql id="sql_of_where">
+        <if test="bParam != null">
+            <if test="bParam.assignedId != null"> AND assigned_id = #{bParam.assignedId, jdbcType=BIGINT}</if>
+            <if test="bParam.state != null"> AND state = #{bParam.state, jdbcType=INTEGER}</if>
+            <if test="bParam.transactionId != null"> AND transaction_id = #{bParam.transactionId, jdbcType=VARCHAR}</if>
+            <if test="bParam.screeningsId != null"> AND screening_id = #{bParam.screeningsId, jdbcType=BIGINT}</if>
+            <if test="bParam.userId != null"> AND user_id = #{bParam.userId, jdbcType=BIGINT}</if>
+            <if test="bParam.areaId != null"> AND area_id = #{bParam.areaId, jdbcType=BIGINT}</if>
+            <if test="bParam.occupiedNum != null"> AND occupied_num = #{bParam.occupiedNum, jdbcType=INTEGER}</if>
+            <if test="bParam.unOccupiedNum != null"> AND un_occupied_num = #{bParam.unOccupiedNum, jdbcType=INTEGER}</if>
+            <if test="bParam.createTime != null"> AND create_time = #{bParam.createTime, jdbcType=TIMESTAMP}</if>
+            <if test="bParam.travelDate != null"> AND travel_date = #{bParam.travelDate, jdbcType=TIMESTAMP}</if>
+        </if>
+    </sql>
+
+    <!-- 具有表别名的通用查询条件 -->
+    <sql id="sql_of_where_alias">
+        <if test="bParam != null">
+            <if test="bParam.assignedId != null"> AND a.assigned_id = #{bParam.assignedId, jdbcType=BIGINT}</if>
+            <if test="bParam.state != null"> AND a.state = #{bParam.state, jdbcType=INTEGER}</if>
+            <if test="bParam.transactionId != null"> AND a.transaction_id = #{bParam.transactionId, jdbcType=VARCHAR}</if>
+            <if test="bParam.screeningsId != null"> AND a.screening_id = #{bParam.screeningsId, jdbcType=BIGINT}</if>
+            <if test="bParam.userId != null"> AND a.user_id = #{bParam.userId, jdbcType=BIGINT}</if>
+            <if test="bParam.areaId != null"> AND a.area_id = #{bParam.areaId, jdbcType=BIGINT}</if>
+            <if test="bParam.occupiedNum != null"> AND a.occupied_num = #{bParam.occupiedNum, jdbcType=INTEGER}</if>
+            <if test="bParam.unOccupiedNum != null"> AND a.un_occupied_num = #{bParam.unOccupiedNum, jdbcType=INTEGER}</if>
+            <if test="bParam.createTime != null"> AND a.create_time = #{bParam.createTime, jdbcType=TIMESTAMP}</if>
+            <if test="bParam.travelDate != null"> AND a.travel_date = #{bParam.travelDate, jdbcType=TIMESTAMP}</if>
+        </if>
+    </sql>
+
+    <!-- 通用分页查询 -->
+    <select id="queryByParamMap" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from assigned_order a
+        <where>
+            <include refid="sql_of_where_alias" />
+        </where>
+        <if test="pParam != null">
+            <if test="pParam.orderByClause == null"> order by a.id desc </if>
+            <if test="pParam.orderByClause != null"> order by ${pParam.orderByClause} </if>
+            <if test="pParam.startIndex != null and pParam.pageSize != null">
+                limit #{pParam.startIndex} , #{pParam.pageSize}
+            </if>
+        </if>
+    </select>
+
+    <!-- 通用分页查询记录总数 -->
+    <select id="countByParamMap" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select count(a.id) from assigned_order a
+        <where>
+            <include refid="sql_of_where_alias" />
+        </where>
+    </select>
+
+
+    <!-- 插入单条数据 -->
+    <insert id="insertAssignedOrder" parameterType="com.pzj.core.product.entity.AssignedOrder">
+        insert into assigned_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            assigned_id,
+            <if test="state != null">state,</if>
+            <if test="transactionId != null">transaction_id,</if>
+            <if test="screeningsId != null">screening_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="areaId != null">area_id,</if>
+            <if test="occupiedNum != null">occupied_num,</if>
+            <if test="unOccupiedNum != null">un_occupied_num,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="travelDate != null">travel_date,</if>
+            <if test="spuId != null">spu_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{assignedId, jdbcType=BIGINT},
+            <if test="state != null">#{state, jdbcType=INTEGER},</if>
+            <if test="transactionId != null">#{transactionId, jdbcType=VARCHAR},</if>
+            <if test="screeningsId != null">#{screeningsId, jdbcType=BIGINT},</if>
+            <if test="userId != null">#{userId, jdbcType=BIGINT},</if>
+            <if test="areaId != null">#{areaId, jdbcType=BIGINT},</if>
+            <if test="occupiedNum != null">#{occupiedNum, jdbcType=INTEGER},</if>
+            <if test="unOccupiedNum != null">#{unOccupiedNum, jdbcType=INTEGER},</if>
+            <if test="createTime != null">#{createTime, jdbcType=TIMESTAMP},</if>
+            <if test="travelDate != null">#{travelDate, jdbcType=TIMESTAMP},</if>
+            <if test="spuId != null">#{spuId, jdbcType=BIGINT},</if>
+        </trim>
+    </insert>
+
+    <!-- 批量插入，请根据业务修改默认值 -->
+    <insert id="insertBatchAssignedOrder" parameterType="java.util.List">
+        insert into assigned_order ( <include refid="Base_Column_List"/> )
+        values
+        <foreach collection="list" item="item" separator="," >
+            (
+            #{item.assignedId, jdbcType=BIGINT}
+            <choose><when test="item.state != null">, #{item.state, jdbcType=INTEGER}</when><otherwise>,''</otherwise></choose>
+            <choose><when test="item.transactionId != null">, #{item.transactionId, jdbcType=VARCHAR}</when><otherwise>,''</otherwise></choose>
+            <choose><when test="item.screeningsId != null">, #{item.screeningsId, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.userId != null">, #{item.userId, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.areaId != null">, #{item.areaId, jdbcType=BIGINT}</when><otherwise>,0</otherwise></choose>
+            <choose><when test="item.occupiedNum != null">, #{item.occupiedNum, jdbcType=INTEGER}</when><otherwise>,''</otherwise></choose>
+            <choose><when test="item.unOccupiedNum != null">, #{item.unOccupiedNum, jdbcType=INTEGER}</when><otherwise>,''</otherwise></choose>
+            <choose><when test="item.createTime != null">, #{item.createTime, jdbcType=TIMESTAMP}</when><otherwise>,'0000-00-00'</otherwise></choose>
+            <choose><when test="item.travelDate != null">, #{item.travelDate, jdbcType=TIMESTAMP}</when><otherwise>,'0000-00-00'</otherwise></choose>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 更新单条数据 -->
+    <update id="updateAssignedOrder" parameterType="com.pzj.base.entity.SysMenu">
+        update assigned_order
+        <set>
+            <if test="state != null">state = #{state, jdbcType=INTEGER},</if>
+            <if test="transactionId != null">transaction_id = #{transactionId, jdbcType=VARCHAR},</if>
+            <if test="screeningsId != null">screening_id = #{screeningsId, jdbcType=BIGINT},</if>
+            <if test="userId != null">user_id = #{userId, jdbcType=BIGINT},</if>
+            <if test="areaId != null">area_id = #{areaId, jdbcType=BIGINT},</if>
+            <if test="occupiedNum != null">occupied_num = #{occupiedNum, jdbcType=INTEGER},</if>
+            <if test="unOccupiedNum != null">un_occupied_num = #{unOccupiedNum, jdbcType=INTEGER},</if>
+            <if test="createTime != null">create_time = #{createTime, jdbcType=TIMESTAMP},</if>
+            <if test="travelDate != null">travel_date = #{travelDate, jdbcType=TIMESTAMP},</if>
+        </set>
+        where
+        assigned_id = #{assignedId, jdbcType=BIGINT}
+    </update>
+
+    <!-- 批量更新 -->
+    <update id="updateBatchAssignedOrder" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            update assigned_order
+            <set>
+                <if test="item.state != null">state = #{item.state, jdbcType=INTEGER},</if>
+                <if test="item.transactionId != null">transaction_id = #{item.transactionId, jdbcType=VARCHAR},</if>
+                <if test="item.screeningsId != null">screening_id = #{item.screeningsId, jdbcType=BIGINT},</if>
+                <if test="item.userId != null">user_id = #{item.userId, jdbcType=BIGINT},</if>
+                <if test="item.areaId != null">area_id = #{item.areaId, jdbcType=BIGINT},</if>
+                <if test="item.occupiedNum != null">occupied_num = #{item.occupiedNum, jdbcType=INTEGER},</if>
+                <if test="item.unOccupiedNum != null">un_occupied_num = #{item.unOccupiedNum, jdbcType=INTEGER},</if>
+                <if test="item.createTime != null">create_time = #{item.createTime, jdbcType=TIMESTAMP},</if>
+                <if test="item.travelDate != null">travel_date = #{item.travelDate, jdbcType=TIMESTAMP},</if>
+            </set>
+            where
+            assigned_id = #{item.assignedId, jdbcType=BIGINT}
+        </foreach>
+    </update>
+</mapper>

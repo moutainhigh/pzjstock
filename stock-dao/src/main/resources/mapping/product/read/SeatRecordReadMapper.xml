@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.read.SeatRecordReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_seatInfo" type="com.pzj.core.product.entity.SeatRecord">
+		<id column="record_id" property="recordId" jdbcType="BIGINT" />
+		<result column="transaction_id" property="transactionId" jdbcType="BIGINT" />
+		<result column="screening_id" property="screeningId" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="seat_id" property="seatId" jdbcType="BIGINT" />
+		<result column="seat_name" property="seatName" jdbcType="BIGINT" />
+		<result column="operator_id" property="operatorId" jdbcType="INTEGER" />
+		<result column="category" property="category" jdbcType="INTEGER" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+		<result column="travel_date" property="travelDate" jdbcType="TIMESTAMP" />
+		<result column="expiration_time" property="expirationTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="BaseResultMap_seatCollects" type="com.pzj.core.product.entity.SeatRecordCollects">
+		<result column="name" property="areaName" jdbcType="VARCHAR" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="seat_num" property="seatNum" jdbcType="INTEGER" />
+		<result column="category" property="category" jdbcType="INTEGER" />
+	</resultMap>
+	<!-- 根据交易id查询座位信息 -->
+	<select id="querySeatInfoByTransactionId" resultMap="BaseResultMap_seatInfo">
+	select
+		screening_id,
+		area_id,
+		seat_id,
+		seat_name,
+		travel_date
+	from seat_record
+	where transaction_id = #{transactionId}
+	</select>
+	
+	<select id="querySeatRecordByModel" resultMap="BaseResultMap_seatInfo">
+		select 
+		s.record_id,
+		s.screening_id,
+		s.area_id,
+		s.seat_id,
+		s.seat_name,
+		s.travel_date,
+		s.category,
+		s.transaction_id,
+		s.operator_id
+	from seat_record s
+	where 1 = 1
+	<if test="seatRecord.screeningId != null">
+		AND s.screening_id = #{seatRecord.screeningId}
+	</if>
+	<if test="seatRecord.areaId != null">
+		AND s.area_id = #{seatRecord.areaId}
+	</if>
+	<if test="seatRecord.transactionId != null">
+		AND s.transaction_id = #{seatRecord.transactionId}
+	</if>
+	<if test="seatRecord.travelDate != null">
+		AND (select date(s.travel_date)) = #{seatRecord.travelDate}
+	</if>
+	<if test="seatRecord.category != null">
+		AND s.category = #{seatRecord.category}
+	</if>
+	<if test="seatRecord.state != null">
+		AND s.state = #{seatRecord.state}
+	</if>
+	
+	<if test="seatRecord.seatIds != null">
+		AND s.seat_id in
+			<foreach collection="seatRecord.seatIds" item="seatId" open="("
+			separator="," close=")">
+			#{seatId}
+		</foreach>
+	</if>
+	</select>
+	<!--  查询过期的占座记录 -->
+	<select id="queryOverdueSeatRecords" resultMap="BaseResultMap_seatInfo">
+		SELECT 
+		screening_id,
+		area_id,
+		seat_id,
+		seat_name,
+		travel_date FROM seat_record
+			WHERE NOW() > expiration_time  
+			AND record_state = 1
+	</select>
+	
+	<select id="queryAreaSeatCollects" resultMap="BaseResultMap_seatCollects">
+	
+		SELECT s.area_id,s.category,a.name,COUNT(record_id) AS seat_num FROM `seat_record` s
+		INNER JOIN
+		`prod_area` a
+		ON s.area_id = a.id
+		where 
+		s.screening_id = #{seatRecord.screeningId}
+		AND s.travel_date = #{seatRecord.travelDate}
+		GROUP BY s.category,s.area_id
+	
+	</select>
+</mapper>

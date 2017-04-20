@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.stock.read.SeatReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.stock.entity.Seat">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="seat_chart_id" property="seatChartId" jdbcType="BIGINT" />
+		<result column="seat_num" property="seatNum" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- 查找座位图对应的座位集合 -->
+	<select id="querySeatBySeatChartId" resultType="java.lang.String" parameterType="java.lang.Long">
+		select
+			seat_num
+		from
+			stock_seat
+		where 
+			seat_chart_id = ${seatChartId}
+	</select>
+	
+	<!-- 统计座位图下生成的座位数 -->
+	<select id="countSeat" resultType="java.lang.Integer" parameterType="java.lang.Long">
+		select
+			count(id)
+		from
+			stock_seat
+		where
+			seat_chart_id = ${seatChartId}
+	</select>
+	
+	<!-- 根据座位图id集合查找座位 -->
+	<select id="querySeatBySeatChartIds" resultType="java.lang.String">
+		select
+			seat_num
+		from
+			stock_seat
+		where
+			seat_chart_id
+		in
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+				${item}
+			</foreach>
+	</select>
+	
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.read.AreaReadMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap_optimized" type="com.pzj.core.product.entity.Area">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="scenic_id" property="scenicId" jdbcType="BIGINT" />
+		<result column="supplier_id" property="supplierId" jdbcType="BIGINT" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="seat_type" property="seatType" jdbcType="TINYINT" />
+		<result column="seat_mode" property="seatMode" jdbcType="TINYINT" />
+		<result column="thumb" property="thumb" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<!-- 优化字段查询sql -->
+	<sql id="Base_Column_List_optimized">
+		id, scenic_id, code, name,
+		create_time,update_time
+	</sql>
+	<!-- 主键查询 -->
+	<select id="selectAreaById" resultMap="BaseResultMap_optimized"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List_optimized" />
+		from prod_area
+		where id = #{areaId}
+	</select>
+	
+	<sql id="page_info">
+		<if test="page != null and page.startIndex != null and page.pageSize != null">
+		limit #{page.startIndex} , #{page.pageSize}
+		</if>
+	</sql>
+	<!-- 查询区域通过区域ID集合-->
+	<select id="queryAreaByIds" resultMap="BaseResultMap_optimized" parameterType="java.util.List">
+		select
+			<include refid="Base_Column_List_optimized" />
+		from 
+			prod_area
+		where 
+			id 
+		in
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>	
+	</select>
+
+	<!-- 根据参数查询 -->
+	<select id="selectAreasByParam" resultMap="BaseResultMap_optimized">
+		select
+		<include refid="Base_Column_List_optimized" />
+		from prod_area
+		<trim prefixOverrides="and">
+			<where>
+				<if test="areaQuery != null ">
+					<if test="areaQuery.id != null">
+						and id = #{areaQuery.id}
+					</if>
+					<if test="areaQuery.scenicId != null">
+						and scenic_id = #{areaQuery.scenicId}
+					</if>
+					<if test="areaQuery.code != null">
+						and code = #{areaQuery.code}
+					</if>
+					<if test="areaQuery.name != null">
+						and name = #{areaQuery.name}
+					</if>
+					<if test="areaQuery.areaNameList != null and areaQuery.areaNameList.size > 0">
+						and name in
+						<foreach collection="areaQuery.areaNameList" index="index" item="item" open="(" separator="," close=")">
+				            #{item}
+				        </foreach>
+					</if>
+					<if test="areaQuery.scenicIds != null and areaQuery.scenicIds.size > 0">
+						and scenic_id in
+						<foreach collection="areaQuery.scenicIds" index="index" item="scenicId" open="(" separator="," close=")">
+				            #{scenicId}
+				        </foreach>
+					</if>
+				</if>
+				or 1=2
+			</where>
+		</trim>
+	</select>
+	
+	<select id="queryScenicBySupplierId" resultMap="BaseResultMap_optimized">
+	select distinct scenic_id
+	 from prod_area
+	 where supplier_id = #{supplierId}
+	 order by create_time desc
+	<include refid="page_info"/>
+	</select>
+	
+	<select id="queryCountScenicBySupplierId" resultType="java.lang.Integer">
+		select count(distinct scenic_id)
+		 from prod_area
+		 where supplier_id = #{supplierId}
+	</select>
+	
+	<select id="queryAreaDetail" resultMap="BaseResultMap_optimized">
+		select
+			id,supplier_id,scenic_id,name,code,state,seat_type,seat_mode,thumb
+		from
+			prod_area
+		where
+			supplier_id=#{supplierId}
+		and
+			scenic_id=#{scenicId}
+		and
+			state=1
+	</select>
+</mapper>

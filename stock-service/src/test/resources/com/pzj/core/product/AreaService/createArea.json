@@ -1,0 +1,14 @@
+{
+  "testData": {
+    "theaterId": 22345678,
+    "supplierId": 123456789,
+    "seatType": 1,
+    "seatMode": 2,
+    "thumb": "12:25:00",
+    "areaInfos": [{
+      "name" : "VIP区",
+      "nameAbbr" : "VIP"
+    }]
+  },
+  "testDataClass": "com.pzj.core.product.model.area.CreateAreaReqModel"
+}

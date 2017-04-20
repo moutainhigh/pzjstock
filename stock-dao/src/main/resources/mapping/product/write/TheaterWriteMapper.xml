@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.TheaterWriteMapper">
+	<!-- 优化字段映射 -->
+	<resultMap id="theater_info" type="com.pzj.core.product.entity.TheaterInfo">
+		<id column="theater_id" property="theaterId" jdbcType="BIGINT" />
+		<result column="line_num" property="lineNum" jdbcType="INTEGER" />
+		<result column="column_num" property="columnNum" jdbcType="INTEGER" />
+		<result column="sort_yype" property="sortType" jdbcType="INTEGER" />
+		<result column="seat_state" property="seatState" jdbcType="INTEGER" />
+	</resultMap>
+	
+	
+	<insert id="createTheaterInfo">
+		INSERT INTO theater_info(
+			theater_id,
+			line_num,
+			column_num,
+			sort_type,
+			seat_state
+			)
+		VALUES(
+		#{theater.theaterId},
+		#{theater.lineNum},
+		#{theater.columnNum},
+		#{theater.sortType},
+		#{theater.seatState}
+		)
+	</insert>
+	
+	<insert id="insertBatch">
+		INSERT INTO theater_info(
+			theater_id,
+			line_num,
+			column_num,
+			sort_type,
+			seat_state
+			)
+		VALUES
+		<foreach collection="theaterInfos" item="theater" separator="," >
+		(
+			#{theater.theaterId},
+			#{theater.lineNum},
+			#{theater.columnNum},
+			#{theater.sortType},
+			#{theater.seatState}
+		)
+		</foreach>
+	</insert>
+	
+	<update id="updateTheaterInfo">
+		UPDATE theater_info 
+		SET 
+		line_num = #{theater.lineNum},
+		column_num = #{theater.columnNum} 
+		WHERE theater_id = #{theater.theaterId}
+	</update>
+	
+<select id="queryTheaterByTheaterId" resultMap="theater_info">
+	SELECT 
+		theater_id,
+		line_num,
+		column_num,
+		sort_type,
+		seat_state
+	FROM theater_info 
+ 	WHERE theater_id = #{theaterId}
+	</select>
+</mapper>

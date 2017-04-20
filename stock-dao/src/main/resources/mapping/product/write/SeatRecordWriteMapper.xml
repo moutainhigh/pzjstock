@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.product.write.SeatRecordWriteMapper">
+	<sql id="BaseColumns">
+		record_id, transaction_id, screening_id, area_id, seat_id, operator_id, category, state,
+		travel_date, expiration_time, create_time, update_time
+	</sql>
+
+	<!-- 优化字段映射 -->
+	<resultMap id="BaseResultMap" type="com.pzj.core.product.entity.SeatRecord">
+		<id column="record_id" property="recordId" jdbcType="BIGINT" />
+		<result column="transaction_id" property="transactionId" jdbcType="BIGINT" />
+		<result column="screening_id" property="screeningId" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="seat_id" property="seatId" jdbcType="BIGINT" />
+		<result column="seat_name" property="seatName" jdbcType="VARCHAR" />
+		<result column="operator_id" property="operatorId" jdbcType="INTEGER" />
+		<result column="category" property="category" jdbcType="INTEGER" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+		<result column="travel_date" property="travelDate" jdbcType="TIMESTAMP" />
+		<result column="expiration_time" property="expirationTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<!-- 根据交易ID或操作人ID，查询 -->
+	<select id="selectExistValidSeatRecord" resultMap="BaseResultMap">
+		select record_id, transaction_id,screening_id, operator_id, category, seat_id, travel_date from seat_record
+		where state = 1 and screening_id = #{screeningId, jdbcType=BIGINT} and travel_date = #{travelDate, jdbcType=TIMESTAMP}
+		and seat_id in
+		<foreach collection="seatIds" item="seatId" open="(" separator="," close=")">
+			#{seatId, jdbcType=BIGINT}
+		</foreach>
+	</select>
+
+
+	<select id="countExistValidSeatRecordByTransactionId" resultType="java.lang.Integer">
+		select count(record_id) from seat_record where transaction_id = #{transactionId, jdbcType=VARCHAR} and state = 1
+	</select>
+
+	<!-- 批量新增 -->
+	<insert id="insertBatchSeatRecord" parameterType="list">
+		insert into seat_record (
+			record_id,
+			record_unique,
+			screening_id,
+			area_id,
+			transaction_id,
+			seat_id,
+			seat_name,
+			category,
+			travel_date,
+			create_time,
+			expiration_time,
+			update_time,
+			operator_id
+		) values
+		<foreach collection="seatRecords" item="seatRecord" separator=",">
+		(
+			#{seatRecord.recordId, jdbcType=BIGINT},
+			#{seatRecord.recordUnique, jdbcType=BIGINT},
+			#{seatRecord.screeningId, jdbcType=BIGINT},
+			#{seatRecord.areaId, jdbcType=BIGINT},
+			#{seatRecord.transactionId, jdbcType=VARCHAR},
+			#{seatRecord.seatId, jdbcType=BIGINT},
+			#{seatRecord.seatName, jdbcType=VARCHAR},
+			#{seatRecord.category, jdbcType=TINYINT},
+			#{seatRecord.travelDate, jdbcType=TIMESTAMP},
+			#{seatRecord.createTime, jdbcType=TIMESTAMP},
+			#{seatRecord.expirationTime, jdbcType=TIMESTAMP},
+			#{seatRecord.updateTime, jdbcType=TIMESTAMP},
+			#{seatRecord.operatorId, jdbcType=BIGINT}
+		)
+		</foreach>
+	</insert>
+	<update id="updateSeatRecords">
+		<foreach collection="list" item="item" separator=";">
+			update seat_record
+			<set>
+				<if test="item.recordUnique != null">
+					record_unique = #{item.recordUnique,jdbcType=BIGINT},
+				</if>
+				<if test="item.screeningId != null">
+					screening_id = #{item.screeningId,jdbcType=BIGINT},
+				</if>
+				<if test="item.areaId != null">
+					area_id = #{item.areaId,jdbcType=BIGINT},
+				</if>
+				<if test="item.transactionId != null">
+					transaction_id = #{item.transactionId,jdbcType=VARCHAR},
+				</if>
+				<if test="item.seatId != null">
+					seat_id = #{item.seatId,jdbcType=BIGINT},
+				</if>
+				<if test="item.seatName != null">
+					seat_name = #{item.seatName,jdbcType=VARCHAR},
+				</if>
+				<if test="item.category != null">
+					category = #{item.category,jdbcType=TINYINT},
+				</if>
+				<if test="item.travelDate != null">
+					travel_date = #{item.travelDate,jdbcType=TIMESTAMP},
+				</if>
+				<if test="item.createTime != null">
+					create_time = #{item.createTime,jdbcType=TIMESTAMP},
+				</if>
+				<if test="item.expirationTime != null">
+					expiration_time = #{item.expirationTime,jdbcType=TIMESTAMP},
+				</if>
+				update_time = #{item.updateTime,jdbcType=VARCHAR},
+				<if test="item.operatorId != null">
+					operator_id = #{item.operatorId,jdbcType=BIGINT},
+				</if>
+				<if test="item.state != null">
+					state = #{item.state,jdbcType=TINYINT},
+				</if>
+			</set>
+			where record_id = #{item.recordId,jdbcType=BIGINT}
+		</foreach>
+	</update>
+
+	<!-- 查询游玩日期内的占座记录 -->
+	<select id="queryValidSeatRecord" resultMap="BaseResultMap">
+	select 
+		screening_id,
+		area_id,
+		seat_id,
+		seat_name,
+		travel_date
+	from seat_record s
+	where s.travel_date >= #{theaterDate}
+		AND s.seat_id in
+		<foreach collection="seatIds" item="seatId" open="("
+			separator="," close=")">
+			#{seatId}
+		</foreach>
+	</select>
+
+	<!-- 根据不同参数查询占座记录 -->
+	<select id="querySeatRecordByModel" resultMap="BaseResultMap">
+		select 
+		s.screening_id,
+		s.area_id,
+		s.seat_id,
+		s.seat_name,
+		s.travel_date,
+		s.category
+	from seat_record s
+	where 1 = 1
+	<if test="seatRecord.screeningId != null">
+		AND s.screening_id = #{seatRecord.screeningId}
+	</if>
+	<if test="seatRecord.areaId != null">
+		AND s.area_id = #{seatRecord.areaId}
+	</if>
+	<if test="seatRecord.transactionId != null">
+		AND s.transaction_id = #{seatRecord.transactionId}
+	</if>
+	<if test="seatRecord.travelDate != null">
+		AND (select date(s.travel_date)) = #{seatRecord.travelDate}
+	</if>
+	<if test="seatRecord.category != null">
+		AND s.category = #{seatRecord.category}
+	</if>
+	<if test="seatRecord.state != null">
+		AND s.state = #{seatRecord.state}
+	</if>
+	
+	<if test="seatRecord.seatIds != null">
+		AND s.seat_id in
+			<foreach collection="seatRecord.seatIds" item="seatId" open="("
+			separator="," close=")">
+			#{seatId}
+		</foreach>
+	</if>
+	<if test="seatRecord.recordIds != null">
+		AND s.record_id in
+			<foreach collection="seatRecord.recordIds" item="recordId" open="("
+			separator="," close=")">
+			#{recordId}
+		</foreach>
+	</if>
+	</select>
+
+	<update id="sortModifySeatRecord" parameterType="com.pzj.core.product.entity.SeatRecordUpdate">
+		UPDATE seat_record 
+		SET state = #{recordUpdate.state}
+		WHERE transaction_id = #{recordUpdate.transactionId}
+		AND state = 1
+		ORDER BY seat_id 
+		LIMIT #{recordUpdate.seatNum}
+	</update>
+</mapper>
