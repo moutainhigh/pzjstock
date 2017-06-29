@@ -81,6 +81,25 @@ public class AssignedOrder implements Serializable {
 
 	private Date createTime;
 
+	public AssignedOrder copy(){
+		AssignedOrder assignedOrder = new AssignedOrder();
+		assignedOrder.assignedId = assignedId;
+		assignedOrder.spuId = spuId;
+		assignedOrder.state = state;
+		assignedOrder.transactionId = transactionId;
+		assignedOrder.screeningsId = screeningsId;
+		assignedOrder.areaId = areaId;
+		assignedOrder.screName = screName;
+		assignedOrder.areaName = areaName;
+		assignedOrder.userId = userId;
+		assignedOrder.travelDate = travelDate;
+		assignedOrder.occupiedNum = occupiedNum;
+		assignedOrder.unOccupiedNum = unOccupiedNum;
+		assignedOrder.assignNum = assignNum;
+		assignedOrder.createTime = createTime;
+		return assignedOrder;
+	}
+
 	/**
 	 * Getter method for property <tt>assignedId</tt>.
 	 * 

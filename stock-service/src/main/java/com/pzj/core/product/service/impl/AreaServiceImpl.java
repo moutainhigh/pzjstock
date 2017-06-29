@@ -127,33 +127,23 @@ public class AreaServiceImpl implements AreaService {
 
 	@Override
 	public Result<Boolean> createArea(final CreateAreaReqModel createAreaReqModel) {
-		LogUtil.loggerPrintInfo(logger, "创建区域，入参：{}", createAreaReqModel);
-
 		Result<Boolean> result = new RpcCaller<Boolean>() {
 			@Override
 			public Boolean call() {
 				return areaWriteEngine.createArea(createAreaReqModel);
 			}
-		}.run();
-
-		LogUtil.loggerPrintInfo(logger, "创建区域，出参：{}", result);
-
+		}.args(createAreaReqModel).run();
 		return result;
 	}
 
 	@Override
 	public Result<Boolean> modifyArea(final ModifyAreaReqModel modifyAreaReqModel) {
-		LogUtil.loggerPrintInfo(logger, "修改区域，入参：{}", modifyAreaReqModel);
-
 		Result<Boolean> result = new RpcCaller<Boolean>() {
 			@Override
 			public Boolean call() {
 				return areaWriteEngine.modifyArea(modifyAreaReqModel);
 			}
-		}.run();
-
-		LogUtil.loggerPrintInfo(logger, "修改区域，出参：{}", result);
-
+		}.args(modifyAreaReqModel).run();
 		return result;
 	}
 

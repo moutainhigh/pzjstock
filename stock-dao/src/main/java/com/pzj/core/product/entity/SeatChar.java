@@ -121,7 +121,7 @@ public class SeatChar implements java.io.Serializable {
 	public String getSeatName() {
 		if (seatName == null) {
 			if (lineName != null && columnName != null) {
-				seatName = lineName + "-" + columnName;
+				seatName = lineName + "_" + columnName;
 			}
 		}
 		return seatName;

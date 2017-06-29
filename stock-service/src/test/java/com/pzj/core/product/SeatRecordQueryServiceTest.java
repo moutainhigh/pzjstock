@@ -25,13 +25,13 @@ public class SeatRecordQueryServiceTest {
 
     @Test
     public void test(){
-        String transactionId = "202002017040510002";
+        String transactionId = "2084917061200106";
         Result<QueryValidSeatRecordResponse> result = seatRecordQueryService.queryValidSeatRecordByTransactionId(transactionId);
 
         assertNotNull(result);
+        System.out.println(JSONConverter.toJson(result));
         assertTrue(result.isOk());
         assertNotNull(result.getData());
 
-        System.out.println(JSONConverter.toJson(result));
     }
 }

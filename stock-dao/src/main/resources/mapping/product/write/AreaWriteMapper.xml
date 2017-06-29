@@ -42,7 +42,13 @@
 
 	<!-- 新增 -->
 	<insert id="insertArea" parameterType="com.pzj.core.product.entity.Area" useGeneratedKeys="true" keyProperty="id">
-		insert into prod_area (<include refid="BaseColumns"/>)
+		insert into prod_area (
+			id, scenic_id, supplier_id, code, name,
+			<if test="state != null">
+				state,
+			</if>
+			seat_type, seat_mode, thumb, create_time, update_time
+		)
 		values
 		(
 			#{id, jdbcType=BIGINT},
@@ -50,7 +56,9 @@
 			#{supplierId, jdbcType=BIGINT},
 			#{code, jdbcType=VARCHAR},
 			#{name, jdbcType=VARCHAR},
-			#{state, jdbcType=TINYINT},
+			<if test="state != null">
+				#{state, jdbcType=TINYINT},
+			</if>
 			#{seatType, jdbcType=TINYINT},
 			#{seatMode, jdbcType=TINYINT},
 			#{thumb, jdbcType=VARCHAR},

@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.pzj.core</groupId>
 		<artifactId>core-stock</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.3.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>stock-service</artifactId>
 	<name>库存业务逻辑处理层</name>
@@ -33,13 +33,12 @@
 			<artifactId>stock-facade</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.pzj.core</groupId>
-			<artifactId>sku-stock-facade</artifactId>
+			<groupId>com.pzj</groupId>
+			<artifactId>dock-facade</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.pzj</groupId>
-			<artifactId>pzj.base.dock</artifactId>
-			<version>${pzj.base.dock.version}</version>
+			<groupId>com.pzj.core</groupId>
+			<artifactId>sku-stock-facade</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -155,10 +154,10 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
-				<excludes>
+				<!-- <excludes>
 					 <exclude>*.properties</exclude>
 					<exclude>*.xml</exclude>
-				</excludes>
+				</excludes> -->
 				<filtering>true</filtering>
 			</resource>
 		</resources>

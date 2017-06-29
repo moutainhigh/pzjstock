@@ -20,25 +20,33 @@ import com.pzj.framework.converter.ObjectConverter;
 @Component("userSeatValidator")
 public class UserSeatValidator implements ObjectConverter<UserSeatModel, ServiceContext, ParamModel> {
 
-    /** 
-     * @see com.pzj.framework.converter.ObjectConverter#convert(java.lang.Object, java.lang.Object)
-     */
-    @Override
-    public ParamModel convert(UserSeatModel userSeatModel, ServiceContext context) {
-        ParamModel paramModel = ParamModel.getInstance();
-        if (CommonUtils.checkObjectIsNull(userSeatModel)) {
-            paramModel.setErrorModel("查询已经被占的座位集合传入UserSeatModel对象为空!");
-            return paramModel;
-        }
-        if (CommonUtils.checkLongIsNull(userSeatModel.getStockId(), true)) {
-            paramModel.setErrorModel("查询已经被占的座位集合传入stockId库存ID为空!");
-            return paramModel;
-        }
-        //        if (CommonUtils.checkLongIsNull(userSeatModel.getOperatorId(), true)) {
-        //            paramModel.setErrorModel("查询已经被占的座位集合传入operateUserId占座用户ID为空!");
-        //            return paramModel;
-        //        }
-        return paramModel;
-    }
+	/** 
+	 * @see com.pzj.framework.converter.ObjectConverter#convert(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public ParamModel convert(UserSeatModel userSeatModel, ServiceContext context) {
+		ParamModel paramModel = ParamModel.getInstance();
+		if (CommonUtils.checkObjectIsNull(userSeatModel)) {
+			paramModel.setErrorModel("查询已经被占的座位集合传入UserSeatModel对象为空!");
+			return paramModel;
+		}
+		if (CommonUtils.checkLongIsNull(userSeatModel.getStockId(), true)) {
+			paramModel.setErrorModel("查询已经被占的座位集合传入stockId库存ID为空!");
+			return paramModel;
+		}
+		if (CommonUtils.checkLongIsNull(userSeatModel.getOperateUserId(), true)) {
+			paramModel.setErrorModel("查询已经被占的座位集合传入operateUserId占座用户ID为空!");
+			return paramModel;
+		}
+		if (CommonUtils.checkLongIsNull(userSeatModel.getScreeingId(), true)) {
+			paramModel.setErrorModel("查询已经被占的座位集合传入screeingId场次ID为空!");
+			return paramModel;
+		}
+		if (CommonUtils.checkLongIsNull(userSeatModel.getAreaId(), true)) {
+			paramModel.setErrorModel("查询已经被占的座位集合传入areaId区域ID为空!");
+			return paramModel;
+		}
+		return paramModel;
+	}
 
 }

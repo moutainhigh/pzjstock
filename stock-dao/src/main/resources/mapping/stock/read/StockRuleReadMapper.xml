@@ -61,6 +61,7 @@
 			stock_rule
 			<include refid="base_page_sql" />
 		<if test=" startIndex != null and pageSize != null">
+			order by create_time desc
 			limit #{startIndex} ,#{pageSize}
 		</if>
 	</select>

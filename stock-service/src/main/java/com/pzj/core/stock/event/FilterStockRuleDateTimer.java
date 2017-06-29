@@ -16,9 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.pzj.core.common.exception.StockException;
+import com.pzj.core.common.exception.InvokeOtherServiceException;
 import com.pzj.core.common.utils.CommonUtils;
-import com.pzj.core.stock.exception.errcode.StockExceptionCode;
 import com.pzj.core.stock.model.AddStockModel;
 import com.pzj.core.stock.model.query.StockListParam;
 import com.pzj.core.stock.model.result.SkuStockListResult;
@@ -33,67 +32,68 @@ import com.pzj.framework.context.Result;
  */
 @Component("filterStockRuleTimer")
 public class FilterStockRuleDateTimer {
-    private static final Logger logger = LoggerFactory.getLogger(FilterStockRuleDateTimer.class);
-    @Resource(name = "skuStockService")
-    private ISkuStockService    skuStockService;
+	private static final Logger logger = LoggerFactory.getLogger(FilterStockRuleDateTimer.class);
+	@Resource(name = "skuStockService")
+	private ISkuStockService skuStockService;
 
-    public List<AddStockModel> filterStockRuleDate(List<Long> ruleIds) {
-        if (CommonUtils.checkObjectIsNull(ruleIds)) {
-            return null;
-        }
+	public List<AddStockModel> filterStockRuleDate(List<Long> ruleIds) {
+		if (CommonUtils.checkObjectIsNull(ruleIds)) {
+			return null;
+		}
 
-        StockListParam stockListParam = new StockListParam();
-        stockListParam.setStockIdList(ruleIds);
-        Result<ArrayList<SkuStockListResult>> stockProResult = skuStockService.findStockSkuByStockRuleIds(stockListParam);
-        if (stockProResult.isOk()) {
-            ArrayList<SkuStockListResult> stockProList = stockProResult.getData();
-            if (CommonUtils.checkObjectIsNull(stockProList)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("库存规则查询不到可用的产品列表---stockRuleIds:{},result:{}", ruleIds, stockProResult);
-                }
-                return null;
-            }
+		StockListParam stockListParam = new StockListParam();
+		stockListParam.setStockIdList(ruleIds);
+		Result<ArrayList<SkuStockListResult>> stockProResult = skuStockService
+				.findStockSkuByStockRuleIds(stockListParam);
+		if (stockProResult.isOk()) {
+			ArrayList<SkuStockListResult> stockProList = stockProResult.getData();
+			if (CommonUtils.checkObjectIsNull(stockProList)) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("库存规则查询不到可用的产品列表---stockRuleIds:{},result:{}", ruleIds, stockProResult);
+				}
+				return null;
+			}
 
-            //过滤时间
-            List<AddStockModel> addStockModelList = new ArrayList<AddStockModel>();
-            ArrayList<SkuStockResult> skuList = null;
-            Long stockRuleId = null;
-            ArrayList<Integer> stockTimeList = null;
-            for (SkuStockListResult stockPro : stockProList) {
-                stockRuleId = stockPro.getStockRuleId();
-                skuList = stockPro.getSkuList();
-                if (CommonUtils.checkObjectIsNull(skuList) || CommonUtils.checkLongIsNull(stockRuleId, true)) {
-                    continue;
-                }
-                Set<Integer> stockTimeSet = new LinkedHashSet<Integer>();
-                for (SkuStockResult skuStock : skuList) {
-                    Date minDate = skuStock.getStartDate();
-                    Date maxDate = skuStock.getEndDate();
-                    if (null != minDate && null != maxDate) {
-                        //判断最小日期是否小于当前日期
-                        if (!CommonUtils.checkStockMinTime(minDate)) {
-                            minDate = new Date();
-                        }
-                        Integer threeMonthMaxDay = CommonUtils.dateAddMonthMaxDay(minDate, 3);
-                        Integer proMaxDate = CommonUtils.getStockDateInteger(maxDate);
-                        if (threeMonthMaxDay.intValue() <= proMaxDate.intValue()) {
-                            stockTimeSet.add(threeMonthMaxDay);
-                        }
-                    }
-                }
+			//过滤时间
+			List<AddStockModel> addStockModelList = new ArrayList<AddStockModel>();
+			ArrayList<SkuStockResult> skuList = null;
+			Long stockRuleId = null;
+			ArrayList<Integer> stockTimeList = null;
+			for (SkuStockListResult stockPro : stockProList) {
+				stockRuleId = stockPro.getStockRuleId();
+				skuList = stockPro.getSkuList();
+				if (CommonUtils.checkObjectIsNull(skuList) || CommonUtils.checkLongIsNull(stockRuleId, true)) {
+					continue;
+				}
+				Set<Integer> stockTimeSet = new LinkedHashSet<Integer>();
+				for (SkuStockResult skuStock : skuList) {
+					Date minDate = skuStock.getStartDate();
+					Date maxDate = skuStock.getEndDate();
+					if (null != minDate && null != maxDate) {
+						//判断最小日期是否小于当前日期
+						if (!CommonUtils.checkStockMinTime(minDate)) {
+							minDate = new Date();
+						}
+						Integer threeMonthMaxDay = CommonUtils.dateAddMonthMaxDay(minDate, 3);
+						Integer proMaxDate = CommonUtils.getStockDateInteger(maxDate);
+						if (threeMonthMaxDay.intValue() <= proMaxDate.intValue()) {
+							stockTimeSet.add(threeMonthMaxDay);
+						}
+					}
+				}
 
-                AddStockModel addStockModel = new AddStockModel();
-                stockTimeList = new ArrayList<Integer>();
-                stockTimeList.addAll(stockTimeSet);
-                addStockModel.setStockRuleId(stockRuleId);
-                addStockModel.setStockTimeIntList(stockTimeList);
-                addStockModelList.add(addStockModel);
+				AddStockModel addStockModel = new AddStockModel();
+				stockTimeList = new ArrayList<Integer>();
+				stockTimeList.addAll(stockTimeSet);
+				addStockModel.setStockRuleId(stockRuleId);
+				addStockModel.setStockTimeIntList(stockTimeList);
+				addStockModelList.add(addStockModel);
 
-            }
-            return addStockModelList;
-        } else {
-            logger.error("---定时通过库存规则ID查询产品列表异常，stockProResult:{}", stockProResult);
-            throw new StockException(StockExceptionCode.STOCK_ERR_MSG);
-        }
-    }
+			}
+			return addStockModelList;
+		} else {
+			logger.error("---定时通过库存规则ID查询产品列表异常，stockProResult:{}", stockProResult);
+			throw new InvokeOtherServiceException();
+		}
+	}
 }

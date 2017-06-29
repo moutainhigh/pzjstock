@@ -21,13 +21,16 @@ import org.springframework.test.context.ContextConfiguration;
 import com.pzj.commons.utils.DateUtils;
 import com.pzj.core.product.enums.LockSeatType;
 import com.pzj.core.product.enums.RecordCategory;
+import com.pzj.core.product.model.OccupyStockReqModel;
 import com.pzj.core.product.model.OccupyStockReqsModel;
+import com.pzj.core.product.model.OccupyStockResponse;
 import com.pzj.core.product.model.ReleaseStockReqModel;
 import com.pzj.core.product.model.ReleaseStockReqsModel;
 import com.pzj.core.product.model.seat.SeatInfoModel;
 import com.pzj.core.product.model.seat.SeatRespModel;
 import com.pzj.core.product.model.seatRecord.SeatRecordCreateReqModel;
 import com.pzj.core.product.model.seatRecord.SeatRecordReqModel;
+import com.pzj.core.product.model.seatRecord.SeatRecordUpdateReqModel;
 import com.pzj.core.product.model.statistics.AreaCollectRespModel;
 import com.pzj.core.product.service.SeatRecordQueryService;
 import com.pzj.core.product.service.SeatRecordService;
@@ -37,6 +40,7 @@ import com.pzj.framework.armyant.junit.spring.ArmyantSpringRunner;
 import com.pzj.framework.context.Result;
 import com.pzj.framework.context.ServiceContext;
 import com.pzj.framework.converter.JSONConverter;
+import com.pzj.framework.idgen.IDGenerater;
 
 /**
  * 
@@ -55,25 +59,44 @@ public class SeatRecordServiceTest {
 	//@Test
 	public void createSeatRecords() {
 		SeatRecordCreateReqModel createReqModel = new SeatRecordCreateReqModel();
-		createReqModel.setScreeingId(321l);
-		createReqModel.setTheaterDate(DateUtils.parseDate("2017-03-20", "yyyy-MM-dd"));
-		createReqModel.setOperateUserId(9999l);
+		createReqModel.setScreeingId(10l);
+		createReqModel.setTheaterDate(DateUtils.parseDate("2017-04-26", "yyyy-MM-dd"));
+		createReqModel.setOperateUserId(2216619736763787l);
 		createReqModel.setLockSeatType(LockSeatType.TMP_VALID);
 
 		List<SeatInfoModel> seatInfoModels = new ArrayList<>();
 		SeatInfoModel seatInfoModel1 = new SeatInfoModel();
-		seatInfoModel1.setSeatId(963l);
+		seatInfoModel1.setSeatId(3932147874274651l);
 		seatInfoModel1.setSeatName("座位963");
-		seatInfoModel1.setAreaId(999l);
+		seatInfoModel1.setAreaId(9l);
 		SeatInfoModel seatInfoModel2 = new SeatInfoModel();
-		seatInfoModel2.setSeatId(964l);
+		seatInfoModel2.setSeatId(3932147874274674l);
 		seatInfoModel2.setSeatName("座位964");
-		seatInfoModel2.setAreaId(999l);
+		seatInfoModel2.setAreaId(9l);
 		seatInfoModels.add(seatInfoModel1);
 		seatInfoModels.add(seatInfoModel2);
 		createReqModel.setSeatInfos(seatInfoModels);
 		Result<Boolean> result = seatRecordService.lockingSeat(createReqModel, new ServiceContext());
 		logger.info("锁座返回结果{}", JSONConverter.toJson(result));
+
+	}
+
+	//@Test
+	public void releaseSeat() {
+		SeatRecordUpdateReqModel updateReqModel = new SeatRecordUpdateReqModel();
+		updateReqModel.setScreeingId(10l);
+		updateReqModel.setTheaterDate(DateUtils.parseDate("2017-05-04", "yyyy-MM-dd"));
+		updateReqModel.setOperateUserId(2216619736763787l);
+		updateReqModel.setAreaId(9l);
+		Result<Boolean> result = seatRecordService.releaseSeat(updateReqModel, new ServiceContext());
+		logger.info("释放座位返回结果{}", JSONConverter.toJson(result));
+
+	}
+
+	//	@Test
+	public void checkavailableSeatRecord() {
+		Result<Boolean> result = seatRecordService.checkavailableSeatRecord(new ServiceContext());
+		logger.info("自动释放座位返回结果{}", JSONConverter.toJson(result));
 
 	}
 
@@ -102,7 +125,33 @@ public class SeatRecordServiceTest {
 	@Test
 	@OneCase("/com/pzj/core/product/SeatRecordService/occupyStock.json")
 	public void occupyStock(@TestData OccupyStockReqsModel occupyStockReqModel) {
-		Result<Boolean> result = seatRecordService.occupyStock(occupyStockReqModel);
+		//setTranscationId(occupyStockReqModel);
+		System.out.println("占库存数量：" + occupyStockReqModel.getOccupyStockReqs().get(0).getOutQuantity());
+
+		occupyStockReqModel.getOccupyStockReqs().get(0).setOutQuantity(1);
+
+		Result<OccupyStockResponse> result = seatRecordService.occupyStock(occupyStockReqModel);
+
+		assertTrue(result.isOk());
+		assertNotNull(result.getData());
+
+		System.out.println(JSONConverter.toJson(result));
+	}
+
+	IDGenerater idGenerater = new IDGenerater();
+
+	private void setTranscationId(OccupyStockReqsModel occupyStockReqModel) {
+		List<OccupyStockReqModel> occupyStockReqs = occupyStockReqModel.getOccupyStockReqs();
+		for (OccupyStockReqModel occupy : occupyStockReqs) {
+			occupy.setTransactionId(String.valueOf(idGenerater.nextId()));
+		}
+	}
+
+	//	@Test
+	@OneCase("/com/pzj/core/product/SeatRecordService/occupyStock.json")
+	public void occupyStockForDock(@TestData OccupyStockReqsModel occupyStockReqModel) {
+
+		Result<Boolean> result = seatRecordService.occupyStockForDock(occupyStockReqModel);
 
 		assertNotNull(result);
 		assertTrue(result.isOk());
@@ -111,24 +160,31 @@ public class SeatRecordServiceTest {
 		System.out.println(JSONConverter.toJson(result));
 	}
 
-//	@Test
+	//	@Test
 	public void releaseStock() {
-		ReleaseStockReqsModel reqsModel = new ReleaseStockReqsModel();
-		reqsModel.setTransactionId("0");
+
 		List<ReleaseStockReqModel> lists = new ArrayList<ReleaseStockReqModel>();
-		ReleaseStockReqModel model = new ReleaseStockReqModel();
-		model.setProductId(1l);
-		model.setSeatNum(1);
-		//model.setStockNum(3);
-		ReleaseStockReqModel model2 = new ReleaseStockReqModel();
-		model2.setProductId(2l);
-		model2.setSeatNum(1);
-		model2.setStockNum(3);
-		lists.add(model);
-		lists.add(model2);
+
+		{
+			ReleaseStockReqModel model = new ReleaseStockReqModel();
+			model.setProductId(855377373078040576L);
+			model.setStockNum(1);
+			lists.add(model);
+		}
+		{
+			ReleaseStockReqModel model2 = new ReleaseStockReqModel();
+			model2.setProductId(855377373078040576L);
+			model2.setStockNum(1);
+			//lists.add(model2);
+		}
+
+		ReleaseStockReqsModel reqsModel = new ReleaseStockReqsModel();
+		reqsModel.setTransactionId("1173417043600035");
 		reqsModel.setReleaseStockReqs(lists);
+
 		Result<Boolean> result = seatRecordService.releaaseStock(reqsModel, new ServiceContext());
 		logger.info("释放正常占座:{}", JSONConverter.toJson(result));
 
 	}
+
 }

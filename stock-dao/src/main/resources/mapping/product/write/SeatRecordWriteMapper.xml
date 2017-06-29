@@ -34,8 +34,9 @@
 	</select>
 
 
-	<select id="countExistValidSeatRecordByTransactionId" resultType="java.lang.Integer">
+	<select id="countExistValidSeatRecordByTransactionScreeningsArea" resultType="java.lang.Integer">
 		select count(record_id) from seat_record where transaction_id = #{transactionId, jdbcType=VARCHAR} and state = 1
+		and screening_id = #{screeningsId, jdbcType=BIGINT} and area_id = #{areaId, jdbcType=BIGINT}
 	</select>
 
 	<!-- 批量新增 -->
@@ -128,7 +129,8 @@
 		seat_name,
 		travel_date
 	from seat_record s
-	where s.travel_date >= #{theaterDate}
+	where s.travel_date = #{theaterDate}
+		AND s.state = 1
 		AND s.seat_id in
 		<foreach collection="seatIds" item="seatId" open="("
 			separator="," close=")">
@@ -139,55 +141,82 @@
 	<!-- 根据不同参数查询占座记录 -->
 	<select id="querySeatRecordByModel" resultMap="BaseResultMap">
 		select 
+		s.record_id,
 		s.screening_id,
 		s.area_id,
 		s.seat_id,
 		s.seat_name,
 		s.travel_date,
-		s.category
+		s.category,
+		s.operator_id,
+		s.state
 	from seat_record s
-	where 1 = 1
-	<if test="seatRecord.screeningId != null">
-		AND s.screening_id = #{seatRecord.screeningId}
-	</if>
-	<if test="seatRecord.areaId != null">
-		AND s.area_id = #{seatRecord.areaId}
-	</if>
-	<if test="seatRecord.transactionId != null">
-		AND s.transaction_id = #{seatRecord.transactionId}
-	</if>
-	<if test="seatRecord.travelDate != null">
-		AND (select date(s.travel_date)) = #{seatRecord.travelDate}
-	</if>
-	<if test="seatRecord.category != null">
-		AND s.category = #{seatRecord.category}
-	</if>
-	<if test="seatRecord.state != null">
-		AND s.state = #{seatRecord.state}
-	</if>
-	
-	<if test="seatRecord.seatIds != null">
-		AND s.seat_id in
-			<foreach collection="seatRecord.seatIds" item="seatId" open="("
-			separator="," close=")">
-			#{seatId}
-		</foreach>
-	</if>
-	<if test="seatRecord.recordIds != null">
-		AND s.record_id in
-			<foreach collection="seatRecord.recordIds" item="recordId" open="("
-			separator="," close=")">
-			#{recordId}
-		</foreach>
-	</if>
+	where
+		<trim prefixOverrides="and|or ">
+			<if test="seatRecord != null">
+				<if test="seatRecord.screeningId != null">
+					AND s.screening_id = #{seatRecord.screeningId}
+				</if>
+				<if test="seatRecord.areaId != null">
+					AND s.area_id = #{seatRecord.areaId}
+				</if>
+				<if test="seatRecord.transactionId != null">
+					AND s.transaction_id = #{seatRecord.transactionId}
+				</if>
+				<if test="seatRecord.travelDate != null">
+					AND (select date(s.travel_date)) = #{seatRecord.travelDate}
+				</if>
+				<if test="seatRecord.category != null">
+					AND s.category = #{seatRecord.category}
+				</if>
+				<if test="seatRecord.state != null">
+					AND s.state = #{seatRecord.state}
+				</if>
+				<if test="seatRecord.operatorId != null">
+					AND s.operator_id = #{seatRecord.operatorId}
+				</if>
+				<if test="seatRecord.seatIds != null and seatRecord.seatIds.size &gt; 0">
+					AND s.seat_id in
+					<foreach collection="seatRecord.seatIds" item="seatId" open="("
+							 separator="," close=")">
+						#{seatId}
+					</foreach>
+				</if>
+				<if test="seatRecord.recordIds != null and seatRecord.recordIds.size &gt; 0">
+					AND s.record_id in
+					<foreach collection="seatRecord.recordIds" item="recordId" open="("
+							 separator="," close=")">
+						#{recordId}
+					</foreach>
+				</if>
+			</if>
+			or  1 = 2
+		</trim>
+		ORDER BY seat_id
 	</select>
 
 	<update id="sortModifySeatRecord" parameterType="com.pzj.core.product.entity.SeatRecordUpdate">
 		UPDATE seat_record 
-		SET state = #{recordUpdate.state}
+		SET state = #{recordUpdate.state}, update_time = #{recordUpdate.updateTime}
 		WHERE transaction_id = #{recordUpdate.transactionId}
 		AND state = 1
 		ORDER BY seat_id 
 		LIMIT #{recordUpdate.seatNum}
 	</update>
+
+
+	<!--  查询过期的占座记录 -->
+	<select id="queryOverdueSeatRecords" resultMap="BaseResultMap">
+		SELECT
+		record_id,
+		screening_id,
+		area_id,
+		seat_id,
+		seat_name,
+		operator_id,
+		travel_date FROM seat_record
+		WHERE NOW() > expiration_time
+		AND category = 30
+		AND state = 1
+	</select>
 </mapper>

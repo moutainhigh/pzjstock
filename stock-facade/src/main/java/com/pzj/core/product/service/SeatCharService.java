@@ -1,12 +1,9 @@
 package com.pzj.core.product.service;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import com.pzj.core.product.model.seat.CreateSeatCharReqModel;
-import com.pzj.core.product.model.seat.ModifySeatCharReqModel;
-import com.pzj.core.product.model.seat.SeatReqModel;
-import com.pzj.core.product.model.seat.SeatRespModel;
-import com.pzj.core.product.model.seat.TheaterSeatChartRespModel;
+import com.pzj.core.product.model.seat.*;
 import com.pzj.framework.context.Result;
 import com.pzj.framework.context.ServiceContext;
 
@@ -125,12 +122,13 @@ public interface SeatCharService {
 	* @apiSuccess (SeatReqModel) {Long} scenicId 景区ID
 	* @apiSuccess (SeatReqModel) {Long} screeingId 场次ID
 	* @apiSuccess (SeatReqModel) {Date} showTime 演出时间
-	*
+	* @apiSuccess (SeatReqModel) {Long} [operateUserId] 锁座时获取操作的用户id
+	* 
 	* @apiParamExample {json} 请求示例
 	*	{
 	*		"model":{
+	*			"scenicId":1,
 	*			"screeingId":1,
-	*			"areaId":1,
 	*			"showTime":"2017-03-08"
 	*		},
 	*		context:{
@@ -149,6 +147,8 @@ public interface SeatCharService {
 	* @apiSuccess (SeatRespModel) {String} xPos 行
 	* @apiSuccess (SeatRespModel) {Integer} saleState 1：可售；2：锁定
 	* @apiSuccess (SeatRespModel) {String} showState 1:可选；2：已选；3：锁定；4：预选
+	* @apiSuccess (SeatRespModel) {Long} operateUserId 操作的用户id
+	* @apiSuccess (SeatRespModel) {Long} lockSeatCurUserIsOpe 锁定的座位当前用户是否可以操作;TRUE:可以操作，FALSE:不可以操作
 	* @apiSuccess (SeatRespModel) {String} [transactionId] 交易id
 	* 
 	* @apiSuccessExample {json} 成功响应数据
@@ -164,6 +164,7 @@ public interface SeatCharService {
 	*				"yPos":"27",
 	*				"saleState":1,
 	*				"showState":1,
+	*				"lockSeatCurUserIsOpe":false,
 	*				"transactionId":"MF98764523"
 	*			}
 	*			]
@@ -310,7 +311,7 @@ public interface SeatCharService {
 	* }
 	*
 	*/
-	Result<ArrayList<TheaterSeatChartRespModel>> queryTheaterSeatchart(Long theaterId);
+	Result<ArrayList<TheaterSeatChartRespModel>> queryTheaterSeatchart(Long theaterId, ServiceContext serviceContext);
 
 	/**
 	* @api {dubbo} com.pzj.core.product.service.SeatCharService.queryAreaSeatchart.queryAreaSeatTotal 统计区域座位总数
@@ -350,4 +351,60 @@ public interface SeatCharService {
 	*
 	*/
 	Result<Integer> queryAreaSeatTotal(Long areaId, ServiceContext serviceContext);
+
+	/**
+	 * 根据id查询座位
+	 * @api {dubbo} com.pzj.core.product.service.SeatCharService.queryTheaterSeatchartBySeatId 根据id查询座位
+	 *apiName 统计区域座位总数
+	 * @apiGroup SAAS&ERP 座位
+	 * @apiVersion 1.2.0-SNAPSHOT
+	 * @apiDescription 根据id查询座位
+	 *
+	 * @apiParam (请求参数) {List} seatIds 座位ID集合，每个元素为Long类型
+	 *
+	 * @apiParamExample {json} 请求示例
+	 *	{
+	 *		"seatIds" : [
+	 *			1,
+	 *			2
+	 *		]
+	 *	}
+	 *
+	 * @apiSuccess (响应数据) {int} errorCode 返回结果码
+	 * @apiSuccess (响应数据) {String} errorMsg 返回结果提示
+	 * @apiSuccess (响应数据) {SeatChartManyRespModel} data 查询座位结果
+	 *
+	 * @apiSuccess (SeatChartManyRespModel) {List} seats 座位集合，每个元素类型为TheaterSeatChartRespModel。
+	 *
+	 * @apiSuccessExample {json} 成功响应数据
+	 *	{
+	 *			"errorCode":10000,
+	 *			"errorMsg":"ok",
+	 *			"data": { "seats" : [
+	 *				{
+	 *					"areaId":1,
+	 *					"seatNum":"A1_27",
+	 *					"seatName":"12",
+	 *					"name":"早场",
+	 *					"column":"zc",
+	 *					"row":"1",
+	 *					"saleState":1,
+	 *					"showState":1
+	 *				}
+	 *			]}
+	 *	}
+	 *
+	 * @apiParam (错误码) {int} 15001 参数错误
+	 * @apiParam (错误码) {int} 15002 库存服务异常
+	 *
+	 * @apiErrorExample {json} 异常响应数据
+	 * {
+	 *    "errorCode" : 15001,
+	 *    "errorMsg":"参数错误"
+	 * }
+	 *
+	 * @param seatIds
+	 * @return
+	 */
+	Result<SeatChartManyRespModel> querySeatChartBySeatId(List<Long> seatIds);
 }

@@ -19,11 +19,6 @@ public class SeatRecordUpdateReqModel implements Serializable {
 
 	/**  */
 	private static final long serialVersionUID = 1592062847600789477L;
-
-	/**
-	 * 剧场id
-	 */
-	private Long theaterId;
 	/**
 	 * 场次id
 	 * 
@@ -45,6 +40,10 @@ public class SeatRecordUpdateReqModel implements Serializable {
 	 */
 
 	private Long operateUserId;
+	/**
+	 * 区域id
+	 */
+	private Long areaId;
 
 	/**
 	 * 锁座的座位集合
@@ -67,24 +66,6 @@ public class SeatRecordUpdateReqModel implements Serializable {
 	 */
 	public void setOperateUserId(Long operateUserId) {
 		this.operateUserId = operateUserId;
-	}
-
-	/**
-	 * Getter method for property <tt>theaterId</tt>.
-	 * 
-	 * @return property value of theaterId
-	 */
-	public Long getTheaterId() {
-		return theaterId;
-	}
-
-	/**
-	 * Setter method for property <tt>theaterId</tt>.
-	 * 
-	 * @param theaterId value to be assigned to property theaterId
-	 */
-	public void setTheaterId(Long theaterId) {
-		this.theaterId = theaterId;
 	}
 
 	/**
@@ -157,6 +138,24 @@ public class SeatRecordUpdateReqModel implements Serializable {
 	 */
 	public void setSeatInfos(List<SeatInfoModel> seatInfos) {
 		this.seatInfos = seatInfos;
+	}
+
+	/**
+	 * Getter method for property <tt>areaId</tt>.
+	 * 
+	 * @return property value of areaId
+	 */
+	public Long getAreaId() {
+		return areaId;
+	}
+
+	/**
+	 * Setter method for property <tt>areaId</tt>.
+	 * 
+	 * @param areaId value to be assigned to property areaId
+	 */
+	public void setAreaId(Long areaId) {
+		this.areaId = areaId;
 	}
 
 }

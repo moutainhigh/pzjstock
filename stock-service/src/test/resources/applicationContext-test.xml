@@ -48,27 +48,36 @@
 	<dubbo:reference id="actingProductService"
 		interface="com.pzj.core.product.service.ActingProductService" check="false"
 		version="1.0" timeout="30000" url="${dubbo.url}" />
-	
+
 	<!-- 演艺接口 -->
 	<dubbo:reference interface="com.pzj.core.product.service.ScreeingsQueryService"
 		id="screeingsQueryService" check="false" version="1.0" timeout="30000" url="${dubbo.url}"/>
-		
+
 	<dubbo:reference interface="com.pzj.core.product.service.ScreeingsService"
 		id="screeingsService" check="false" version="1.0" timeout="30000" url="${dubbo.url}"/>
-		
+
 	<dubbo:reference id="seatRecordService"
 		interface="com.pzj.core.product.service.SeatRecordService" check="false"
 		version="1.0" timeout="30000" url="${dubbo.url}" />
-		
+
 	<dubbo:reference id="assignedOrderQueryService"
 		interface="com.pzj.core.product.service.AssignedOrderQueryService" check="false"
 		version="1.0" timeout="30000" url="${dubbo.url}" />
-		
+
 	<dubbo:reference interface="com.pzj.core.product.service.SeatCharService"
 		id="seatCharService" check="false"
 		version="1.0" timeout="30000" url="${dubbo.url}" />
-		
+
 	<dubbo:reference interface="com.pzj.core.product.service.AreaQueryService"
 		id="areaQueryService" check="false"
 		version="1.0" timeout="30000" url="${dubbo.url}" />
+
+	<!-- 库存依赖产品服务 -->
+	<dubbo:reference interface="com.pzj.core.stock.service.ISkuStockService"
+		id="skuStockService" version="2.0" timeout="30000" check="false" />
+
+	<!-- 依赖产品核心服务 -->
+	<dubbo:reference interface="com.pzj.core.product.common.service.ISpuProductService"
+		id="spuProductService" check="false" version="2.0" timeout="30000" url="${dubbo.url}"  />
+
 </beans>

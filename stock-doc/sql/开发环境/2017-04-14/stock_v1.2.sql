@@ -11,7 +11,7 @@ CREATE TABLE `assigned_order` (
   `occupied_num` int(3) NOT NULL DEFAULT '0' COMMENT '已分配数量',
   `spu_id` bigint(20) DEFAULT NULL COMMENT '产品id',
   PRIMARY KEY (`assigned_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='待分配列表';
 
 
 CREATE TABLE `seat_char` (
@@ -42,7 +42,7 @@ CREATE TABLE `seat_record` (
   `seat_id` bigint(20) NOT NULL COMMENT '座位id',
   `seat_name` varchar(20) NOT NULL COMMENT '座位名称',
   `operator_id` bigint(20) NOT NULL COMMENT '占座用户id',
-  `category` tinyint(2) NOT NULL COMMENT '类别（1：待选；2：已占；3：锁定；4：预选）	',
+  `category` tinyint(2) NOT NULL COMMENT '类别（10：待选；20：已占；30：锁定；40：预选）	',
   `state` tinyint(1) NOT NULL DEFAULT '1' COMMENT '记录是否有效（0：无效；1：有效）',
   `travel_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '游玩日期',
   `expiration_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '过期时间',
@@ -50,7 +50,7 @@ CREATE TABLE `seat_record` (
   `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新日期',
   PRIMARY KEY (`record_id`),
   UNIQUE KEY `record_unique_UNIQUE` (`record_unique`) COMMENT '占座记录唯一索引'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='座位记录';
 
 
 
@@ -70,7 +70,7 @@ ALTER TABLE `stock`.`prod_area`
 
 ADD COLUMN `supplier_id` BIGINT(20) NULL COMMENT '供应商ID' AFTER `scenic_id`,
 CHANGE COLUMN `name` `name` VARCHAR(200) NOT NULL COMMENT '区域名称' AFTER `supplier_id`,
-ADD COLUMN `state` TINYINT(1) NULL DEFAULT 1 COMMENT '状态值（1：正常；0：删除）' AFTER `code`,
+ADD COLUMN `state` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '状态值（1：正常；0：删除）' AFTER `code`,
 ADD COLUMN `seat_type` TINYINT(1) NULL DEFAULT 1 COMMENT '座位类型（1：无座位；2：有座位，只支持矩形）' AFTER `state`,
 ADD COLUMN `seat_mode` TINYINT(1) NULL DEFAULT 1 COMMENT '座位模式（1：用户自选；2：后台配座；3：系统分配）' AFTER `seat_type`,
 ADD COLUMN `thumb` VARCHAR(50) NULL COMMENT '缩略图' AFTER `seat_mode`;
@@ -79,7 +79,7 @@ ADD COLUMN `thumb` VARCHAR(50) NULL COMMENT '缩略图' AFTER `seat_mode`;
 
 
 ALTER TABLE `stock`.`prod_screeings`
-add COLUMN `state` TINYINT(2) UNSIGNED NULL DEFAULT '1' COMMENT '状态值（1：正常；0：删除）',
+add COLUMN `state` TINYINT(2) UNSIGNED NOT NULL DEFAULT '1' COMMENT '状态值（1：正常；0：删除）',
 add COLUMN  `supplier_id` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0' COMMENT '供应商id' AFTER `scenic_id`,
 CHANGE COLUMN  `scenic_id`  `scenic_id` BIGINT(20) NOT NULL COMMENT '景区id（剧场id）';
 
@@ -93,4 +93,4 @@ CREATE TABLE `theater_info` (
   `sort_type` tinyint(1) NOT NULL DEFAULT '1' COMMENT '座位排序类型 1.正序 2.奇数左 3.奇数右',
   `seat_state` tinyint(1) NOT NULL DEFAULT '1' COMMENT '座位状态1.可售 3.锁定',
   PRIMARY KEY (`theater_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='剧场信息';

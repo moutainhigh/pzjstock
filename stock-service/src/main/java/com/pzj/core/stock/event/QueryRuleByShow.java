@@ -43,8 +43,14 @@ public class QueryRuleByShow {
 			if (CommonUtils.checkCollectionIsNull(stockRuleInfos)) {
 				return null;
 			}
-
-			return stockRuleInfos.get(0).getStockRuleId();
+			Long stockRuleId = null;
+			for (StockRuleInfoResult stockRuleInfo : stockRuleInfos) {
+				if (null != stockRuleInfo.getStockRuleId() && stockRuleInfo.getStockRuleId().longValue() > 0) {
+					stockRuleId = stockRuleInfo.getStockRuleId();
+					break;
+				}
+			}
+			return stockRuleId;
 
 		} else {
 			logger.error("QueryRuleByShow queryRuleByScreeingArea call sku service failed,code:{},message:{}",

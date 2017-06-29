@@ -61,6 +61,7 @@ public class ActingServiceImpl {
 		for (AreaVo areavo : areaVoList) {
 			AreaModel areaModel = new AreaModel();
 			areaModel.setScenicId(scenicId);
+			areaModel.setSupplierId(supplierId);
 			areaModel.setName(areavo.getAreaName());
 			areaModel.setCode(areavo.getAreaSign());
 			areaModelList.add(areaModel);
@@ -69,6 +70,7 @@ public class ActingServiceImpl {
 		for (ScreeningsVO screeningsVO : screeningsVOList) {
 			ScreeingsModel screeingsModel = new ScreeingsModel();
 			screeingsModel.setScenicId(scenicId);
+			screeingsModel.setSupplierId(supplierId);
 			screeingsModel.setName(screeningsVO.getScreeningsName());
 			screeingsModel.setCode(screeningsVO.getScreeningsSign());
 			screeingsModel.setStartTime(screeningsVO.getScreeningsStart());

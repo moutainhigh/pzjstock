@@ -4,44 +4,39 @@
  */
 package com.pzj.core.product.seatRecord;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import com.pzj.core.product.area.AreaQueryByIdEngine;
+import com.pzj.commons.utils.CheckUtils;
+import com.pzj.core.common.exception.StockException;
 import com.pzj.core.product.common.exception.TheaterException;
 import com.pzj.core.product.common.exception.TheaterExceptionCode;
 import com.pzj.core.product.entity.*;
-import com.pzj.core.product.model.QuerySeatRecordResponse;
-import com.pzj.core.product.model.QueryValidSeatRecordResponse;
-import com.pzj.core.product.screeings.ScreeingsQueryByIdEngine;
-import com.pzj.core.product.screeings.ScreeningsWriteEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.pzj.commons.utils.CheckUtils;
-import com.pzj.core.common.exception.StockException;
 import com.pzj.core.product.enums.RecordCategory;
 import com.pzj.core.product.enums.RecordState;
 import com.pzj.core.product.enums.SeatType;
+import com.pzj.core.product.model.QuerySeatRecordResponse;
+import com.pzj.core.product.model.QueryValidSeatRecordResponse;
+import com.pzj.core.product.model.assign.AssignedOrderQueryReqModel;
 import com.pzj.core.product.model.seat.SeatInfoModel;
 import com.pzj.core.product.model.seat.SeatRespModel;
 import com.pzj.core.product.model.seatRecord.SeatRecordReqModel;
 import com.pzj.core.product.model.statistics.AreaCollectRespModel;
+import com.pzj.core.product.read.AreaReadMapper;
+import com.pzj.core.product.read.AssignedOrderReadMapper;
 import com.pzj.core.product.read.SeatRecordReadMapper;
+import com.pzj.core.product.screeings.ScreeingsQueryByIdEngine;
 import com.pzj.core.product.seatchar.QuerySeatchartEngine;
 import com.pzj.core.product.write.SeatRecordWriteMapper;
 import com.pzj.core.stock.exception.errcode.StockExceptionCode;
 import com.pzj.framework.context.Result;
 import com.pzj.framework.context.ServiceContext;
 import com.pzj.framework.converter.JSONConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.*;
 
 /**
  * 
@@ -61,7 +56,10 @@ public class SeatRecordQueryEngine {
 	@Resource
 	private ScreeingsQueryByIdEngine screeingsQueryByIdEngine;
 	@Resource
-	private AreaQueryByIdEngine areaQueryByIdEngine;
+	private AssignedOrderReadMapper assignedOrderReadMapper;
+
+	@Autowired
+	private AreaReadMapper areaReadMapper;
 
 	/**
 	 * 根据订单id查询占座记录
@@ -82,56 +80,67 @@ public class SeatRecordQueryEngine {
 		}
 	}
 
-	public QueryValidSeatRecordResponse queryValidSeatRecordByTransactionId(String transactionId){
-		if (transactionId == null){
+	public QueryValidSeatRecordResponse queryValidSeatRecordByTransactionId(String transactionId) {
+		if (transactionId == null) {
 			throw new TheaterException(TheaterExceptionCode.PARAMETER_EMPTY);
 		}
 
 		SeatRecord seatRecordParam = new SeatRecord();
 		seatRecordParam.setTransactionId(transactionId);
-		seatRecordParam.setState(1);
+		seatRecordParam.setState(RecordState.EFFECTIVER.getState());
+
+
+		// 查询交易id的所有座位记录
 		List<SeatRecord> seatRecords = seatRecordReadMapper.querySeatRecordByModel(seatRecordParam);
 
-		if (seatRecords == null || seatRecords.isEmpty()){
-			return null;
+		if (seatRecords != null && !seatRecords.isEmpty()) {
+			List<Area> areas = queryAreaBySeatRecord(seatRecords);
+
+			SeatRecord seatRecord = seatRecords.get(0);
+			Screeings screeings = screeingsQueryByIdEngine.queryScreeingsById(seatRecord.getScreeningId());
+
+			return convertToQueryValidSeatRecordResponse(seatRecords, screeings, areas);
 		}
 
-		SeatRecord seatRecord = seatRecords.get(0);
-		Screeings screeings = screeingsQueryByIdEngine.queryScreeingsById(seatRecord.getScreeningId());
-		Area area = areaQueryByIdEngine.queryAreaById(seatRecord.getAreaId());
+		List<AssignedOrder> assignedOrders = assignedOrderReadMapper.selectAssignedOrderByTransaction(transactionId);
+		if (assignedOrders != null && !assignedOrders.isEmpty()){
+			List<Area> areas = queryAreaBySeatRecord2(assignedOrders);
 
+			AssignedOrder assignedOrder = assignedOrders.get(0);
+			Screeings screeings = screeingsQueryByIdEngine.queryScreeingsById(assignedOrder.getScreeningsId());
 
-		return convertToQueryValidSeatRecordResponse(seatRecords, screeings, area);
+			return convertToQueryValidSeatRecordResponse2(screeings, assignedOrders, areas);
+		}
+
+		return null;
 	}
 
-
-	private QueryValidSeatRecordResponse convertToQueryValidSeatRecordResponse(List<SeatRecord> seatRecords, Screeings screeings, Area area){
-		if (seatRecords == null){
+	private QueryValidSeatRecordResponse convertToQueryValidSeatRecordResponse2(Screeings screeings, List<AssignedOrder> assignedOrders, List<Area> areas) {
+		if (assignedOrders == null) {
 			return null;
+		}
+		if (assignedOrders == null){
+			assignedOrders = Collections.EMPTY_LIST;
 		}
 
 		List<QuerySeatRecordResponse> querySeatRecordResponses = new ArrayList<>();
 
-		for (SeatRecord seatRecord : seatRecords){
+		for (AssignedOrder seatRecord : assignedOrders) {
 			QuerySeatRecordResponse res = new QuerySeatRecordResponse();
-/*			if (screeings.getId().equals(seatRecord.getScreeningId())){
-				throw new TheaterException();
-			}
-			if (area.getId().equals(seatRecord.getAreaId())){
-				throw new TheaterException();
-			}*/
 
-			res.setRecordId(seatRecord.getRecordId());
 			res.setTransactionId(seatRecord.getTransactionId());
 			res.setScreeningId(screeings.getId());
 			res.setScreeningName(screeings.getName());
-			res.setAreaId(area.getId());
-			res.setAreaName(area.getName());
-			res.setSeatId(seatRecord.getSeatId());
-			res.setSeatName(seatRecord.getSeatName());
+
 			res.setTravelDate(seatRecord.getTravelDate());
-			res.setOperatorId(seatRecord.getOperatorId());
-			res.setCategory(seatRecord.getCategory());
+
+
+			for (Area area : areas){
+				if (area.getId().equals(seatRecord.getAreaId())){
+					res.setAreaId(area.getId());
+					res.setAreaName(area.getName());
+				}
+			}
 
 			querySeatRecordResponses.add(res);
 		}
@@ -141,6 +150,78 @@ public class SeatRecordQueryEngine {
 		return response;
 	}
 
+	private List<Area> queryAreaBySeatRecord(List<SeatRecord> seatRecords){
+		List<Long> areaIds = new ArrayList<>();
+		for (SeatRecord seatRecord : seatRecords){
+			areaIds.add(seatRecord.getAreaId());
+		}
+
+		if (areaIds.isEmpty()){
+			return null;
+		}
+
+		List<Area> areas = areaReadMapper.queryAreaByIds(areaIds);
+		return areas;
+	}
+
+	private List<Area> queryAreaBySeatRecord2(List<AssignedOrder> assignedOrders){
+		List<Long> areaIds = new ArrayList<>();
+		for (AssignedOrder assignedOrder : assignedOrders){
+			areaIds.add(assignedOrder.getAreaId());
+		}
+
+		if (areaIds.isEmpty()){
+			return null;
+		}
+
+		List<Area> areas = areaReadMapper.queryAreaByIds(areaIds);
+		return areas;
+	}
+
+	private QueryValidSeatRecordResponse convertToQueryValidSeatRecordResponse(List<SeatRecord> seatRecords,
+			Screeings screeings, List<Area> areas) {
+		if (seatRecords == null) {
+			return null;
+		}
+		if (areas == null){
+			areas = Collections.EMPTY_LIST;
+		}
+
+		List<QuerySeatRecordResponse> querySeatRecordResponses = new ArrayList<>();
+
+		for (SeatRecord seatRecord : seatRecords) {
+			QuerySeatRecordResponse res = new QuerySeatRecordResponse();
+			/*			if (screeings.getId().equals(seatRecord.getScreeningId())){
+							throw new TheaterException();
+						}
+						if (area.getId().equals(seatRecord.getAreaId())){
+							throw new TheaterException();
+						}*/
+
+			res.setRecordId(seatRecord.getRecordId());
+			res.setTransactionId(seatRecord.getTransactionId());
+			res.setScreeningId(screeings.getId());
+			res.setScreeningName(screeings.getName());
+			res.setSeatId(seatRecord.getSeatId());
+			res.setSeatName(seatRecord.getSeatName());
+			res.setTravelDate(seatRecord.getTravelDate());
+			res.setOperatorId(seatRecord.getOperatorId());
+			res.setCategory(seatRecord.getCategory());
+
+			for (Area area : areas){
+				if (area.getId().equals(seatRecord.getAreaId())){
+					res.setAreaId(area.getId());
+					res.setAreaName(area.getName());
+				}
+			}
+
+			querySeatRecordResponses.add(res);
+		}
+
+		QueryValidSeatRecordResponse response = new QueryValidSeatRecordResponse();
+		response.setQuerySeatRecordResponses(querySeatRecordResponses);
+		return response;
+	}
 
 	/**
 	 * 根据游玩时间和座位id查询有效的记录
@@ -174,17 +255,6 @@ public class SeatRecordQueryEngine {
 	}
 
 	/**
-	 * 查询过期的有效锁座记录
-	 * 
-	 * @param serviceContext
-	 * @return
-	 */
-	public List<SeatRecord> queryOverdueSeatRecords(ServiceContext serviceContext) {
-		List<SeatRecord> seatRecords = seatRecordReadMapper.queryOverdueSeatRecords();
-		return seatRecords;
-	}
-
-	/**
 	 * 场次下区域的各状态座位数量汇总
 	 * 
 	 * @param model
@@ -206,7 +276,7 @@ public class SeatRecordQueryEngine {
 				collectRespModel.setAreaId(areaId);
 				collectRespModel.setAreaName(seatRecordCollects.getAreaName());
 				//首次需要查询区域下的座位
-				SeatChar seatChar = new SeatChar();
+				SeatCharQuery seatChar = new SeatCharQuery();
 				seatChar.setAreaId(areaId);
 				seatChar.setType(SeatType.IS_SEAT.getState());
 				List<SeatChar> seatChars = querySeatchartEngine.querySeatCharsByModel(seatChar, context);
@@ -263,6 +333,7 @@ public class SeatRecordQueryEngine {
 			respModel.setSeatName(seatRecord.getSeatName());
 			respModel.setShowState(seatRecord.getCategory());
 			respModel.setTransactionId(seatRecord.getTransactionId());
+			respModel.setOperateUserId(seatRecord.getOperatorId());
 			seatRespModels.add(respModel);
 		}
 		return seatRespModels;
@@ -279,5 +350,32 @@ public class SeatRecordQueryEngine {
 			seatInfoModels.add(seatInfoModel);
 		}
 		return seatInfoModels;
+	}
+
+	public QueryValidSeatRecordResponse queryOverdueSeatRecords(){
+		List<SeatRecord> seatRecords = seatRecordWriteMapper.queryOverdueSeatRecords();
+		if(seatRecords == null || seatRecords.isEmpty()){
+			return new QueryValidSeatRecordResponse();
+		}
+		return 	convertToQueryValidSeatRecordResponse(seatRecords);
+	}
+
+	private QueryValidSeatRecordResponse convertToQueryValidSeatRecordResponse(List<SeatRecord> seatRecords){
+		List<QuerySeatRecordResponse> querySeatRecordResponses = new ArrayList<>();
+
+		for (SeatRecord seatRecord : seatRecords) {
+			QuerySeatRecordResponse res = new QuerySeatRecordResponse();
+			res.setRecordId(seatRecord.getRecordId());
+			res.setScreeningId(seatRecord.getScreeningId());
+			res.setSeatId(seatRecord.getSeatId());
+			res.setSeatName(seatRecord.getSeatName());
+			res.setTravelDate(seatRecord.getTravelDate());
+			res.setOperatorId(seatRecord.getOperatorId());
+			res.setAreaId(seatRecord.getAreaId());
+			querySeatRecordResponses.add(res);
+		}
+		QueryValidSeatRecordResponse response = new QueryValidSeatRecordResponse();
+		response.setQuerySeatRecordResponses(querySeatRecordResponses);
+		return response;
 	}
 }

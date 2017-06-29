@@ -108,7 +108,7 @@ public class AreaWriteEngine {
     private void createAreaInit(Area area, Date currentDate){
         area.setId(idGenerater.nextId());
         area.setCreateTime(currentDate);
-        area.setState(AreaStage.ENABLE.getValue());
+        area.setState(AreaState.ENABLE.getValue());
     }
 
     private void copyAreaCommonInfoToArea(AreaCommonInfo areaCommonInfo, Area area){
@@ -270,6 +270,11 @@ public class AreaWriteEngine {
         }
     }
 
+    /**
+     * 根据区域id查询所有区域的公共信息
+     * @param areaId
+     * @return
+     */
     public AreaCommonInfo queryAreaCommonInfoByAreaId(Long areaId) {
         Area area = areaWriteMapper.selectAreaById(areaId);
         if (area != null){
@@ -277,5 +282,23 @@ public class AreaWriteEngine {
             return areaCommonInfo;
         }
         return null;
+    }
+
+    /**
+     * 检查指定区域是否需求占库存
+     * @param areaId 被检查区域的id
+     * @return
+     */
+    public boolean needOccupySeat(Long areaId){
+        if (areaId == null || areaId == 0) {
+            return false;
+        }
+        AreaCommonInfo areaCommonInfo = queryAreaCommonInfoByAreaId(areaId);
+        if (areaCommonInfo == null) {
+            TheaterExceptionCode code = TheaterExceptionCode.AREA_NOT_EXIST;
+            String msg = code.getTemplateMessage(areaId);
+            throw new TheaterException(code.getCode(), msg);
+        }
+        return AreaSeatType.RectangularSeat.equals(areaCommonInfo.getSeatType());
     }
 }

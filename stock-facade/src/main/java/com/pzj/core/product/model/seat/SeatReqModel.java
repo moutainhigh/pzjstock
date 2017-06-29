@@ -21,6 +21,10 @@ public class SeatReqModel implements java.io.Serializable {
 	 * 演出时间
 	 */
 	private Date showTime;
+	/**
+	 * 锁座时获取操作的用户id
+	 */
+	private Long operateUserId;
 
 	public Long getScenicId() {
 		return scenicId;
@@ -52,6 +56,14 @@ public class SeatReqModel implements java.io.Serializable {
 
 	public void setShowTime(Date showTime) {
 		this.showTime = showTime;
+	}
+
+	public Long getOperateUserId() {
+		return operateUserId;
+	}
+
+	public void setOperateUserId(Long operateUserId) {
+		this.operateUserId = operateUserId;
 	}
 
 }

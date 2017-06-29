@@ -815,6 +815,17 @@ public class CommonUtils {
 		return strBuffer.toString();
 	}
 
+	public static String timerConvertor(Integer timer) {
+		StringBuilder sb = new StringBuilder();
+		String str = String.valueOf(timer);
+		int length = str.length();
+		sb.append(str);
+		for (int i = 0; i < 4 - length; i++) {
+			sb.insert(0, "0", 0, 1);
+		}
+		return sb.toString().intern();
+	}
+
 	public static int getLinePos(String prefixSeat) {
 		int linePos = 0;
 		if (CommonUtils.checkStringIsNullStrict(prefixSeat)) {
@@ -831,6 +842,22 @@ public class CommonUtils {
 		return linePos;
 	}
 
+	public static String getLineName(String prefixSeat) {
+		if (CommonUtils.checkStringIsNullStrict(prefixSeat)) {
+			return null;
+		}
+		String lineName = "";
+		char[] chars = prefixSeat.toCharArray();
+		for (int i = 0; i < chars.length; i++) {
+			String cs = chars[i] + "";
+			if (cs.matches("^\\d$")) {
+				lineName = prefixSeat.substring(0, i);
+				break;
+			}
+		}
+		return lineName;
+	}
+
 	/**
 	 * 
 	 * @param args
@@ -838,9 +865,5 @@ public class CommonUtils {
 	 */
 	public static void main(String[] args) throws ParseException {
 
-		String str = "a,b,c,,";
-		String[] ary = str.split(",");
-		//预期大于3，结果是3
-		System.out.println(ary.length);
 	}
 }

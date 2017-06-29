@@ -14,6 +14,7 @@ import com.pzj.core.common.exception.ParameterErrorException;
 import com.pzj.core.common.exception.StockException;
 import com.pzj.core.common.utils.CommonUtils;
 import com.pzj.core.stock.exception.errcode.StockExceptionCode;
+import com.pzj.core.stock.exception.errcode.StockRuleExceptionCode;
 import com.pzj.core.stock.model.ParamModel;
 import com.pzj.core.stock.model.StockRuleModel;
 import com.pzj.core.stock.model.query.StockParam;
@@ -164,8 +165,10 @@ public class StockRuleServiceImpl implements StockRuleService {
 				//2.根据关系选择调用更新方法
 				if (have) {
 					//已绑定产品的修改规则
-					count = updateStockRuleYetBind(model, context);
-
+					//					count = updateStockRuleYetBind(model, context);
+					CommonUtils.setResultErr(StockRuleExceptionCode.STOCK_RULE_REL_AVAI_PRODUCT_ERR_CODE,
+							StockRuleExceptionCode.STOCK_RULE_REL_AVAI_PRODUCT_ERR_MSG, result);
+					return result;
 				} else {
 					//未绑定产品的修改规则 
 					count = updateStockRuleNoBind(model, context);

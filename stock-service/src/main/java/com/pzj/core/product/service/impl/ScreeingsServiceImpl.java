@@ -139,33 +139,24 @@ public class ScreeingsServiceImpl implements ScreeingsService {
 
 	@Override
 	public Result<Long> createScreenings(final CreateScreeningsReqModel createScreeningsReqModel) {
-		LogUtil.loggerPrintInfo(logger, "创建场次，入参：{}", createScreeningsReqModel);
-
 		Result<Long> result = new RpcCaller<Long>() {
 			@Override
 			public Long call() {
 				return screeningsWriteEngine.createScreenings(createScreeningsReqModel);
 			}
-		}.run();
-
-		LogUtil.loggerPrintInfo(logger, "创建场次，出参：{}", result);
+		}.args(createScreeningsReqModel).run();
 
 		return result;
 	}
 
 	@Override
 	public Result<Boolean> modifyScreenings(final ModifyScreeningReqModel modifyScreeningReqModel) {
-		LogUtil.loggerPrintInfo(logger, "修改场次，入参：{}", modifyScreeningReqModel);
-
 		Result<Boolean> result = new RpcCaller<Boolean>() {
 			@Override
 			public Boolean call() {
 				return screeningsWriteEngine.modifyScreenings(modifyScreeningReqModel);
 			}
-		}.run();
-
-		LogUtil.loggerPrintInfo(logger, "修改场次，出参：{}", result);
-
+		}.args(modifyScreeningReqModel).run();
 		return result;
 	}
 

@@ -3,14 +3,14 @@ package com.pzj.core.product.area;
 /**
  * Created by Administrator on 2017-3-21.
  */
-public enum AreaStage {
+public enum AreaState {
     ENABLE(1),
     DELTEED(0)
     ;
 
     private int value;
 
-    AreaStage(int value){
+    AreaState(int value){
         this.value = value;
     }
 

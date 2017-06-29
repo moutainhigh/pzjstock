@@ -15,6 +15,13 @@ public class ReleaseStockReqsModel implements Serializable {
 	 */
 	private String transactionId;
 	private List<ReleaseStockReqModel> releaseStockReqs;
+	/**
+	 * 释放标识
+	 * 1：取消订单时的释放
+	 * 2：退款时的释放
+	 * 枚举：{@link com.pzj.core.common.utils.StockGlobalDict.ReleaseFlag}
+	 */
+	private Integer releaseFlag = 1;
 
 	public List<ReleaseStockReqModel> getReleaseStockReqs() {
 		return releaseStockReqs;
@@ -40,5 +47,13 @@ public class ReleaseStockReqsModel implements Serializable {
 	 */
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
+	}
+
+	public Integer getReleaseFlag() {
+		return releaseFlag;
+	}
+
+	public void setReleaseFlag(Integer releaseFlag) {
+		this.releaseFlag = releaseFlag;
 	}
 }

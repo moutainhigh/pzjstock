@@ -10,19 +10,24 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pzj.core.common.exception.StockException;
 import com.pzj.core.common.utils.CommonUtils;
 import com.pzj.core.stock.entity.LockRecord;
 import com.pzj.core.stock.entity.Stock;
+import com.pzj.core.stock.entity.StockRule;
 import com.pzj.core.stock.enums.OperateStockBussinessType;
+import com.pzj.core.stock.enums.StockRuleStateEnum;
 import com.pzj.core.stock.enums.StockStateEnum;
 import com.pzj.core.stock.exception.errcode.StockExceptionCode;
 import com.pzj.core.stock.exception.stock.LimitedException;
 import com.pzj.core.stock.exception.stock.NotFoundStockException;
 import com.pzj.core.stock.exception.stock.ShortageStockException;
+import com.pzj.core.stock.exception.stock.StockExpiredException;
 import com.pzj.core.stock.exception.stock.StockStateException;
 import com.pzj.core.stock.model.OccupyStockRequestModel;
 import com.pzj.core.stock.read.LockRecordReadMapper;
 import com.pzj.core.stock.read.StockReadMapper;
+import com.pzj.core.stock.rulequery.StockRuleQueryByIdEngine;
 import com.pzj.core.stock.stockquery.StockQueryParamEngine;
 import com.pzj.core.stock.write.LockRecordWriteMapper;
 import com.pzj.core.stock.write.StockWriteMapper;
@@ -50,6 +55,9 @@ public class OccupyStockEngine {
 	@Resource(name = "stockQueryParamEngine")
 	private StockQueryParamEngine stockQueryParamEngine;
 
+	@Resource(name = "stockRuleQueryByIdEngine")
+	private StockRuleQueryByIdEngine stockRuleQueryByIdEngine;
+
 	@Transactional(value = "stock.transactionManager", timeout = 2)
 	public void occupyStock(List<OccupyStockRequestModel> orderStockModelList) {
 		//1. 根据库存ID获取库存的基本信息.
@@ -57,7 +65,27 @@ public class OccupyStockEngine {
 
 		Map<Long, Integer> stockOccupyMap = getOccupyStockMap(orderStockModelList);
 		//2. 判断是否可以占库存
-		canOccupyStock(stockList, stockOccupyMap);
+		try {
+			canOccupyStock(stockList, stockOccupyMap);
+		} catch (StockException exception) {
+			if (stockList != null && !stockList.isEmpty()) {
+				Stock stock = stockList.get(0);
+				StockRule stockRule = stockRuleQueryByIdEngine.selectStockRuleById(stock.getRuleId(), null);
+				OccupyStockException occupyStockException = new OccupyStockException(exception);
+				if (null != stockRule && stockRule.getState() == StockRuleStateEnum.AVAILABLE.getState()) {
+					occupyStockException.setStockId(stock.getId());
+					occupyStockException.setStockName(stockRule.getName());
+					occupyStockException.setStockType(stock.getType());
+					occupyStockException.setRemainNum(stock.getRemainNum());
+					occupyStockException.setStockRuleId(stock.getRuleId());
+					occupyStockException.setStackTrace(exception.getStackTrace());
+				}
+				throw occupyStockException;
+			}
+			throw exception;
+		} catch (Throwable throwable) {
+			throw throwable;
+		}
 
 		//3. 判断库存是否已被锁定.
 		//		if (!checkLock(orderStockModelList)) {
@@ -162,7 +190,7 @@ public class OccupyStockEngine {
 	/**
 	 * 判断库存可被占用.
 	 * @param stockList
-	 * @param orderStockModelList
+	 * @param stockOccupyMap
 	 */
 	private void canOccupyStock(List<Stock> stockList, Map<Long, Integer> stockOccupyMap) {
 		Integer occupyNum = null;
@@ -176,17 +204,29 @@ public class OccupyStockEngine {
 				throw new StockStateException(StockExceptionCode.STOCK_STATE_ERR_MSG);
 			}
 
+			int stockTime = stock.getStockTime() == null ? 0 : stock.getStockTime();
+			if (stockTime > 0 && !CommonUtils.checkStockTimeIsAvai(stockTime)) {
+				throw new StockExpiredException(StockExceptionCode.STOCK_EXPIRE_ERR_MSG);
+			}
+
 			occupyNum = stockOccupyMap.get(stock.getId());
 
 			int remain = stock.getRemainNum();
 			if (remain < occupyNum) {
-				throw new ShortageStockException(StockExceptionCode.STOCK_SHORTAGE_ERR_MSG);
+				String format = null;
+				if (remain == 0) {
+					format = "对不起，该产品已售罄";
+				} else {
+					format = String.format(StockExceptionCode.STOCK_SHORTAGE_ERR_MSG_FORMAT, remain);
+				}
+				throw new ShortageStockException(format);
 			}
 
 			int total = stock.getTotalNum();
 			int used = stock.getUsedNum() == null ? 0 : stock.getUsedNum();
 			if ((used + occupyNum) > total) {
-				throw new LimitedException(StockExceptionCode.MAX_STOCK_NUM_ERR_MSG);
+				String format = String.format(StockExceptionCode.MAX_STOCK_NUM_ERR_MSG_FORMAT, total);
+				throw new LimitedException(format);
 			}
 		}
 	}

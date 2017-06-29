@@ -17,7 +17,9 @@
 		prod_screeings (
 			code,
 			name,
-			state,
+			<if test="state != null">
+				state,
+			</if>
 			scenic_id,
 			supplier_id,
 			start_time,
@@ -29,7 +31,9 @@
 		(
 			#{code},
 			#{name},
-			#{state},
+			<if test="state != null">
+				#{state},
+			</if>
 			#{scenicId},
 			#{supplierId},
 			#{startTime},

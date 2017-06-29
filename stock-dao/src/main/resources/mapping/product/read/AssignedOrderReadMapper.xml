@@ -163,4 +163,8 @@
 		order by 
 			travel_date asc
 	</select>
+    <select id="selectAssignedOrderByTransaction" resultMap="spuAssignResultMap">
+		select assigned_id, state, transaction_id, screening_id, user_id, area_id, occupied_num, un_occupied_num, create_time, travel_date from assigned_order
+		where transaction_id = #{transactionId, jdbcType=VARCHAR}
+	</select>
 </mapper>

@@ -59,16 +59,16 @@ public enum TheaterExceptionCode {
     SEAT_RECORD_NULL_CATEGORY(15330, "座位记录的类型为空"), //
     SEAT_RECORD_NULL_STATE(15331, "座位记录的状态为空"), //
     SEAT_RECORD_NULL_TRAVEL_DATE(15332, "座位记录的游玩时间为空"), //
-    SEAT_RECORD_ILLEGAL_ID(15332, "座位记录的ID无效", "座位记录的ID：%1$s无效"), //
-    SEAT_RECORD_ILLEGAL_CATEGORY(15333, "座位记录的类型无效", "座位记录的座位模式 %1$s 无效，请使用正确的值 %2$s"), //
-    SEAT_RECORD_ILLEGAL_STATE(15334, "座位记录的状态无效", "座位记录的座位类型 %1$s 无效，请使用正确的值 %2$s"), //
-    SEAT_RECORD_RULE_HAS_BEEN_OCCUPIED(15335, "座位已经被占", "座位已经被占，记录ID为 %1$s。"), //
-    SEAT_RECORD_RULE_NOT_THE_OWNER(15336, "座位属于其他用户", "座位属于其他用户，记录ID为 %1$s ，拥有都ID为 %2$s，试图操作记录的用户ID为 %3$s。"), //
-    SEAT_RECORD_RULE_NOT_THE_TRANSACTION(15337, "座位属于其他交易", "座位属于其他交易，记录ID为 %1$s ，所属交易ID为 %2$s，试图操作记录的交易ID为 %3$s。"), //
-    SEAT_RECORD_RULE_SEATS_GREATER_STOCK(15338, "分配的座位数量超过了库存", "分配的座位数量超过了库存，记录ID为 %1$s ，剩余可分配座位数量为 %2$s，尝试新分配的座位数量为 %3$s。"), //
-    SEAT_RECORD_MODIFY_ERROR(15339, "修改座位记录异常"), //
-    SEAT_RECORD_OCCUPYING_FILURE(15340, "占座时失败，因为有其他人已经抢先占了座位。"), //
-    SEAT_RECORD_ILLEGAL_SEATMODE(15341, "申请座位记录类型无效", "申请座位记录类型 %1$s 无效，请使用正确的值： %2$s"), //
+    SEAT_RECORD_ILLEGAL_ID(15333, "座位记录的ID无效", "座位记录的ID：%1$s无效"), //
+    SEAT_RECORD_ILLEGAL_CATEGORY(15334, "座位记录的类型无效", "座位记录的座位模式 %1$s 无效，请使用正确的值 %2$s"), //
+    SEAT_RECORD_ILLEGAL_STATE(15335, "座位记录的状态无效", "座位记录的座位类型 %1$s 无效，请使用正确的值 %2$s"), //
+    SEAT_RECORD_RULE_HAS_BEEN_OCCUPIED(15336, "座位已经被占", "座位已经被占，记录ID为 %1$s。"), //
+    SEAT_RECORD_RULE_NOT_THE_OWNER(15337, "座位属于其他用户", "座位属于其他用户，记录ID为 %1$s ，拥有都ID为 %2$s，试图操作记录的用户ID为 %3$s。"), //
+    SEAT_RECORD_RULE_NOT_THE_TRANSACTION(15338, "座位属于其他交易", "座位属于其他交易，记录ID为 %1$s ，所属交易ID为 %2$s，试图操作记录的交易ID为 %3$s。"), //
+    SEAT_RECORD_RULE_SEATS_GREATER_STOCK(15339, "分配的座位数量超过了库存", "分配的座位数量超过了库存，记录ID为 %1$s ，剩余可分配座位数量为 %2$s，尝试新分配的座位数量为 %3$s。"), //
+    SEAT_RECORD_MODIFY_ERROR(15340, "修改座位记录异常"), //
+    SEAT_RECORD_OCCUPYING_FILURE(15341, "占座时失败，因为有其他人已经抢先占了座位。"), //
+    SEAT_RECORD_ILLEGAL_SEATMODE(15342, "申请座位记录类型无效", "申请座位记录类型 %1$s 无效，请使用正确的值： %2$s"), //
     SEAT_RECORD_RULE_TRAVEL_DATE_EXPIRED(15343, "游玩时间不能晚于今天", "游玩时间不能晚于今天，尝试的游玩时间为 %3$s。"), //
 
     // 待分配列表
@@ -91,30 +91,31 @@ public enum TheaterExceptionCode {
     ASSIGNED_RULE_NO_REDISTRIBUTION(15366, "待分配记录不可再分配座位", "待分配记录不可再分配座位，待分配ID为 %1$s ，目前状态为 %2$s。"), //
 
     // 座位
-    SEAT_NOT_EXIST(15350, "座位不存在"), //
-    SEAT_DELETED(15351, "座位已经被删除"), //
-    SEAT_DISABLE(15352, "座位不可用"), //
-    SEAT_NULL(15353, "座位为空"), //
-    SEAT_NULL_ID(15354, "座位的ID为空"), //
-    SEAT_NULL_TRANSACTION(15355, "座位的交易ID为空"), //
-    SEAT_NULL_SCREENING(15356, "座位的剧场ID为空"), //
-    SEAT_NULL_AREA(15357, "座位的区域ID为空"), //
-    SEAT_NULL_OPERATOR(15358, "座位的操作人ID为空"), //
-    SEAT_NULL_STATE(15359, "座位的状态为空"), //
-    SEAT_NULL_UN_OCCUPIED_NUM(15360, "座位的待占数量为空"), //
-    SEAT_NULL_OCCUPIED_NUM(15361, "座位的状态为空"), //
-    SEAT_NULL_TRAVEL_DATE(15362, "座位的游玩时间为空"), //
-    SEAT_ILLEGAL_ID(15363, "座位的ID无效", "座位的ID：%1$s无效"), //
-    SEAT_ILLEGAL_CATEGORY(15364, "座位的类型无效", "座位的待分配模式 %1$s 无效，请使用正确的值 %2$s"), //
-    SEAT_ILLEGAL_STATE(15365, "座位的状态无效", "座位的待分配类型 %1$s 无效，请使用正确的值 %2$s"), //
-    SEAT_RULE_NO_REDISTRIBUTION(15366, "座位不可再分配座位", "座位不可再分配座位，待分配ID为 %1$s ，目前状态为 %2$s。"), //
-    SEAT_RULE_REPEAT(15367, "座位不能重复", "座位不能重复，重复的座位唯一值为 %1$s。"), //
+    SEAT_NOT_EXIST(15380, "座位不存在"), //
+    SEAT_DELETED(15381, "座位已经被删除"), //
+    SEAT_DISABLE(15382, "座位不可用"), //
+    SEAT_NULL(15383, "座位为空"), //
+    SEAT_NULL_ID(15384, "座位的ID为空"), //
+    SEAT_NULL_TRANSACTION(15385, "座位的交易ID为空"), //
+    SEAT_NULL_SCREENING(15386, "座位的剧场ID为空"), //
+    SEAT_NULL_AREA(15387, "座位的区域ID为空"), //
+    SEAT_NULL_OPERATOR(15388, "座位的操作人ID为空"), //
+    SEAT_NULL_STATE(15389, "座位的状态为空"), //
+    SEAT_NULL_UN_OCCUPIED_NUM(15390, "座位的待占数量为空"), //
+    SEAT_NULL_OCCUPIED_NUM(15391, "座位的状态为空"), //
+    SEAT_NULL_TRAVEL_DATE(15392, "座位的游玩时间为空"), //
+    SEAT_ILLEGAL_ID(15393, "座位的ID无效", "座位的ID：%1$s无效"), //
+    SEAT_ILLEGAL_CATEGORY(15394, "座位的类型无效", "座位的待分配模式 %1$s 无效，请使用正确的值 %2$s"), //
+    SEAT_ILLEGAL_STATE(15395, "座位的状态无效", "座位的待分配类型 %1$s 无效，请使用正确的值 %2$s"), //
+    SEAT_RULE_NO_REDISTRIBUTION(15396, "座位不可再分配座位", "座位不可再分配座位，待分配ID为 %1$s ，目前状态为 %2$s。"), //
+    SEAT_RULE_REPEAT(15397, "座位不能重复", "座位不能重复，重复的座位唯一值为 %1$s。"), //
+    SEAT_RULE_AREA(15398, "请求的座位与请求的区域不匹配", "请求的座位与请求的区域不匹配，座位ID为 %1$s，区域ID为 %2$s，正确的区域ID为 %3$s。"), //
 
     OCCUPYED_STOCK_NULL_OUT_QUANTITY(15367, "占库存数量不能为空"),
-    OCCUPYED_STOCK_NULL_RULE_ID(15367, "库存规则ID不能为空"),
-    OCCUPYED_STOCK_NULL_SCREENING(15367, "场次ID不能为空"),
-    OCCUPYED_STOCK_NULL_AREA(15367, "区域ID不能为空"),
-    OCCUPYED_STOCK_NOT_EXIST(15367, "无法找到库存", "无法找到库存，规则ID为 %1$s，游玩时间为 %2$s。"),
+    OCCUPYED_STOCK_NULL_RULE_ID(15366, "库存规则ID不能为空"),
+    OCCUPYED_STOCK_NULL_SCREENING(15369, "场次ID不能为空"),
+    OCCUPYED_STOCK_NULL_AREA(15370, "区域ID不能为空"),
+    OCCUPYED_STOCK_NOT_EXIST(15371, "无法找到库存", "无法找到库存，规则ID为 %1$s，游玩时间为 %2$s。"),
 
     // 库存
     STOCK_NULL_PRODUCT(15380, "产品id为空"), //

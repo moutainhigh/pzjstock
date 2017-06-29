@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import com.pzj.core.common.utils.CommonUtils;
+import com.pzj.core.product.area.AreaState;
 import com.pzj.core.product.entity.Area;
 import com.pzj.core.product.entity.Screeings;
 import com.pzj.core.product.model.area.AreaModel;
@@ -44,11 +45,20 @@ public class ScreeingAreaQueryEngine {
 		}
 		List<ScreeingsModel> screeingModels = new ArrayList<ScreeingsModel>();
 		ScreeingsModel screeingsModel = null;
+		String sTime = "", eTime = "";
 		for (Screeings screeing : screeings) {
+			if (screeing.getState() != ScreeningState.ENABLE.getValue()) {
+				continue;
+			}
+			sTime = CommonUtils.timerConvertor(screeing.getStartTime());
+			eTime = CommonUtils.timerConvertor(screeing.getEndTime());
 			screeingsModel = new ScreeingsModel();
 			screeingsModel.setId(screeing.getId());
 			screeingsModel.setName(screeing.getName());
 			screeingsModel.setScenicId(screeing.getScenicId());
+			screeingsModel.setSupplierId(screeing.getSupplierId());
+			screeingsModel.setStartTime(sTime);
+			screeingsModel.setEndTime(eTime);
 			screeingModels.add(screeingsModel);
 		}
 		return screeingModels;
@@ -61,10 +71,14 @@ public class ScreeingAreaQueryEngine {
 		List<AreaModel> areaModels = new ArrayList<AreaModel>();
 		AreaModel areaModel = null;
 		for (Area area : areas) {
+			if (area.getState() != AreaState.ENABLE.getValue()) {
+				continue;
+			}
 			areaModel = new AreaModel();
 			areaModel.setId(area.getId());
 			areaModel.setName(area.getName());
 			areaModel.setScenicId(area.getScenicId());
+			areaModel.setSupplierId(area.getSupplierId());
 			areaModels.add(areaModel);
 		}
 		return areaModels;

@@ -21,18 +21,19 @@ public interface SeatRecordWriteMapper {
 	//新增
 	Integer insertBatchSeatRecord(@Param(value = "seatRecords") List<SeatRecord> seatRecords);
 
-	//修改
-	Integer updateRecordStateByIds(@Param(value = "recordIds") List<Long> recordIds,
-			@Param(value = "recordState") Integer recordState, Long recordUnique);
-
 	Integer sortModifySeatRecord(@Param(value = "recordUpdate") SeatRecordUpdate recordUpdate);
+
+
+	List<SeatRecord> queryOverdueSeatRecords();
 
 	int updateSeatRecords(List<SeatRecord> seatRecords);
 
 	List<SeatRecord> selectExistValidSeatRecord(@Param("screeningId") Long screeningId,
 			@Param("travelDate") Date travelDate, @Param("seatIds") List<Long> seatIds);
 
-	int countExistValidSeatRecordByTransactionId(@Param("transactionId") String transactionId);
+	int countExistValidSeatRecordByTransactionScreeningsArea(@Param("transactionId") String transactionId,
+															 @Param("screeningsId") Long screeningsId,
+															 @Param("areaId") Long areaId);
 
 	/**
 	 * 根据演出时间和座位id查询有效记录

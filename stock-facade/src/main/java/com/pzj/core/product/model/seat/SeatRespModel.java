@@ -35,6 +35,14 @@ public class SeatRespModel implements java.io.Serializable {
 	 * 交易id
 	 */
 	private String transactionId;
+	/**
+	 * 锁座时获取操作的用户id
+	 */
+	private Long operateUserId;
+	/**
+	 * 锁定的座位当前用户是否可以操作;TRUE:可以操作，FALSE:不可以操作
+	 */
+	private Boolean lockSeatCurUserIsOpe;
 
 	public Long getAreaId() {
 		return areaId;
@@ -108,6 +116,22 @@ public class SeatRespModel implements java.io.Serializable {
 
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
+	}
+
+	public Boolean getLockSeatCurUserIsOpe() {
+		return lockSeatCurUserIsOpe;
+	}
+
+	public void setLockSeatCurUserIsOpe(Boolean lockSeatCurUserIsOpe) {
+		this.lockSeatCurUserIsOpe = lockSeatCurUserIsOpe;
+	}
+
+	public Long getOperateUserId() {
+		return operateUserId;
+	}
+
+	public void setOperateUserId(Long operateUserId) {
+		this.operateUserId = operateUserId;
 	}
 
 }

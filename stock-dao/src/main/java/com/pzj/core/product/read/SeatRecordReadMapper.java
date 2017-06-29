@@ -21,7 +21,5 @@ public interface SeatRecordReadMapper {
 
 	List<SeatRecord> querySeatRecordByModel(@Param(value = "seatRecord") SeatRecord seatRecord);
 
-	List<SeatRecord> queryOverdueSeatRecords();
-
 	List<SeatRecordCollects> queryAreaSeatCollects(@Param(value = "seatRecord") SeatRecord seatRecord);
 }

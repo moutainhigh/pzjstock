@@ -40,10 +40,11 @@ public class RollbackOccupyStockEngine {
 	@Resource(name = "stockWriteMapper")
 	private StockWriteMapper stockWriteMapper;
 
+
 	@Transactional(value = "stock.transactionManager", timeout = 2)
 	public void rollbackOccupyStock(OccupyStockRequestModel requestModel) {
 		//1. 查看回滚库存数据是否存在.
-		List<LockRecord> lockList = lockRecordWriteMapper.queryStockRecordByTranId(requestModel.getTransactionId());
+		List<LockRecord> lockList = getBussLockRecords(requestModel.getTransactionId());
 		if (CommonUtils.checkCollectionIsNull(lockList)) {
 			return;
 		}
@@ -79,6 +80,11 @@ public class RollbackOccupyStockEngine {
 		}
 		return stockWriteMapper.queryStockByIdsForUpdate(stockIds);
 	}
+	public List<LockRecord> getBussLockRecords(String transactionId) {
+		return lockRecordWriteMapper.queryStockRecordByTranId(transactionId);
+	}
+
+
 
 	/**
 	 * 判断库存是否可以回滚

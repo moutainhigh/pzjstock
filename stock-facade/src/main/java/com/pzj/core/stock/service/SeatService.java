@@ -79,8 +79,9 @@ public interface SeatService {
 	 * @apiParam (请求参数) {ServiceContext} [context] 上下文
 	 * 
 	 * @apiParam (UserSeatModel) {Long} stockId 库存ID
-	 * @apiParam (UserSeatModel) {Long} [operateUserId] 占座用户ID
-	 * 
+	 * @apiParam (UserSeatModel) {Long} operateUserId 占座用户ID
+	 * @apiParam (UserSeatModel) {Long} screeingId 场次ID
+	 * @apiParam (UserSeatModel) {Long} areaId 区域ID
 	 * 
 	 * @apiParamExample {json} 请求示例
 	 *  {

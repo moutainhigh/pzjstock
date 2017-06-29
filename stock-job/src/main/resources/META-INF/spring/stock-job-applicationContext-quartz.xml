@@ -10,8 +10,8 @@
 		http://www.springframework.org/schema/task/spring-task-3.1.xsd">
 	
 	<import resource="classpath:META-INF/spring/stock-job-applicationContext-dubbo.xml" />
-	
-	<context:component-scan base-package="com.pzj.core.stock.job" />
+
+	<context:component-scan base-package="com.pzj.core" />
 
 	<bean id="jobDetail"
 		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
@@ -40,7 +40,29 @@
 		<property name="triggers">
 			<list>
 				<ref bean="stock-Trigger" />
+				<ref bean="seat-trigger" />
 			</list>
 		</property>
 	</bean>
+
+	<bean id="seatJobDetail"
+		  class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="seatOverdueJob" />
+		</property>
+		<property name="targetMethod">
+			<value>checkavailableSeatRecord</value>
+		</property>
+	</bean>
+
+	<bean id="seat-trigger"
+		  class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="seatJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 */1 * * * ?</value>
+		</property>
+	</bean>
+
 </beans>     

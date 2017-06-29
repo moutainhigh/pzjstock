@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.pzj.core</groupId>
 		<artifactId>core-stock</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.3.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>stock-dao</artifactId>

@@ -16,11 +16,6 @@ public class ReleaseStockReqModel implements Serializable {
 	private Long productId;
 
 	/**
-	 * 释放的座位数量
-	 */
-	private Integer seatNum;
-
-	/**
 	 * 释放的库存数量
 	 */
 	private Integer stockNum;
@@ -41,24 +36,6 @@ public class ReleaseStockReqModel implements Serializable {
 	 */
 	public void setProductId(Long productId) {
 		this.productId = productId;
-	}
-
-	/**
-	 * Getter method for property <tt>seatNum</tt>.
-	 * 
-	 * @return property value of seatNum
-	 */
-	public Integer getSeatNum() {
-		return seatNum == null ? 0 : seatNum;
-	}
-
-	/**
-	 * Setter method for property <tt>seatNum</tt>.
-	 * 
-	 * @param seatNum value to be assigned to property seatNum
-	 */
-	public void setSeatNum(Integer seatNum) {
-		this.seatNum = seatNum;
 	}
 
 	/**

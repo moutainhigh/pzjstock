@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -47,11 +48,11 @@ public class StockTest {
 	ServiceContext serviceContext = null;
 	StockQueryRequestModel request = new StockQueryRequestModel();
 
-	//    @Test
+	@Test
 	public void testcreatStock() {
 		CreateStockModel model = new CreateStockModel();
 		List<Long> ruleIds = new ArrayList<Long>();
-		ruleIds.add(2L);
+		ruleIds.add(2216619741566397L);
 		model.setRuleIds(ruleIds);
 		Result<Integer> result = stockService.createStock(model, serviceContext);
 		if (result.getData() != null) {

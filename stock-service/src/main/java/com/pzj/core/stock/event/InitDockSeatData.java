@@ -4,21 +4,34 @@
  */
 package com.pzj.core.stock.event;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.pzj.core.common.exception.InvokeOtherServiceException;
 import com.pzj.core.common.exception.StockException;
 import com.pzj.core.common.utils.CommonUtils;
+import com.pzj.core.product.common.model.response.SkuProductOutModel;
+import com.pzj.core.product.common.service.ISpuProductService;
 import com.pzj.core.product.model.ActingProductQueryRequstModel;
 import com.pzj.core.product.model.area.AreaScreeingsRelModel;
 import com.pzj.core.product.service.ActingProductService;
+import com.pzj.core.stock.entity.Stock;
+import com.pzj.core.stock.entity.StockSeatRel;
+import com.pzj.core.stock.enums.OperateSeatBussinessType;
 import com.pzj.core.stock.exception.errcode.StockExceptionCode;
 import com.pzj.core.stock.model.ShowModel;
 import com.pzj.core.stock.model.StockModel;
 import com.pzj.core.stock.model.StockQueryRequestModel;
+import com.pzj.core.stock.seat.UserSeatQueryEngine;
 import com.pzj.core.stock.service.StockQueryService;
+import com.pzj.core.stock.stockquery.StockQueryByIdEngine;
 import com.pzj.dock.supplier.vo.DockSeatVO;
 import com.pzj.framework.context.Result;
 import com.pzj.framework.context.ServiceContext;
@@ -66,14 +79,14 @@ public class InitDockSeatData {
         }
         AreaScreeingsRelModel areaScreeRel = actingResult.getData();
         DockSeatVO dockSeatVO = new DockSeatVO();
-        dockSeatVO.setSupplierId(areaScreeRel.getSupplierId());
-        dockSeatVO.setScenicId(areaScreeRel.getScenicId());
-        dockSeatVO.setTransactionId(showModel.getTransactionId());
-        dockSeatVO.setScreenings(areaScreeRel.getScreeingsId());
-        dockSeatVO.setArea(areaScreeRel.getAreaId().toString());
-        dockSeatVO.setSeats(seats.toString());
-        dockSeatVO.setShowTime(stockModel.getStockDate());
-        dockSeatVO.setOperateBusiness(showModel.getOperateBusiness());
+//        dockSeatVO.setSupplierId(areaScreeRel.getSupplierId());
+//        dockSeatVO.setScenicId(areaScreeRel.getScenicId());
+//        dockSeatVO.setTransactionId(showModel.getTransactionId());
+//        dockSeatVO.setScreenings(areaScreeRel.getScreeingsId());
+//        dockSeatVO.setArea(areaScreeRel.getAreaId().toString());
+//        dockSeatVO.setSeats(seats.toString());
+//        dockSeatVO.setShowTime(stockModel.getStockDate());
+//        dockSeatVO.setOperateBusiness(showModel.getOperateBusiness());
         return dockSeatVO;
     }
 }

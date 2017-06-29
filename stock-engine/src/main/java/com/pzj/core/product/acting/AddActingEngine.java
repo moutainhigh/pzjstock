@@ -14,8 +14,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pzj.core.common.utils.CommonUtils;
+import com.pzj.core.product.area.AreaSeatMode;
+import com.pzj.core.product.area.AreaSeatType;
+import com.pzj.core.product.area.AreaState;
 import com.pzj.core.product.entity.Acting;
 import com.pzj.core.product.entity.Area;
+import com.pzj.core.product.entity.AreaQuery;
 import com.pzj.core.product.entity.AreaScreeingsRel;
 import com.pzj.core.product.entity.Screeings;
 import com.pzj.core.product.enums.ActingStateEnum;
@@ -25,6 +29,7 @@ import com.pzj.core.product.model.screeings.ScreeingsModel;
 import com.pzj.core.product.read.ActingReadMapper;
 import com.pzj.core.product.read.AreaReadMapper;
 import com.pzj.core.product.read.ScreeingsReadMapper;
+import com.pzj.core.product.screeings.ScreeningState;
 import com.pzj.core.product.write.ActingWriteMapper;
 import com.pzj.core.product.write.AreaScreeingsRelWriteMapper;
 import com.pzj.core.product.write.AreaWriteMapper;
@@ -106,6 +111,7 @@ public class AddActingEngine {
 					areaScreeings.setAreaName(area.getName());
 					areaScreeings.setScreeingsId(screenings.getId());
 					areaScreeings.setScreeingsName(screenings.getName());
+					areaScreeings.setState(ScreeningState.ENABLE.getValue());
 					areaScreeings.setState(ActingStateEnum.AVAILABLE.getState());
 					list.add(areaScreeings);
 				}
@@ -126,7 +132,11 @@ public class AddActingEngine {
 			area = new Area();
 			area.setName(areaModel.getName());
 			area.setScenicId(areaModel.getScenicId());
+			area.setSupplierId(areaModel.getSupplierId());
 			area.setCode(areaModel.getCode());
+			area.setState(AreaState.ENABLE.getValue());
+			area.setSeatType(AreaSeatType.RectangularSeat.getValue());
+			area.setSeatMode(AreaSeatMode.BackgroundAllocation.getValue());
 			areaWriteMapper.insertArea(area);
 			areaList.add(area);
 		}
@@ -146,6 +156,7 @@ public class AddActingEngine {
 			screeings = new Screeings();
 			screeings.setName(screeingsModel.getName());
 			screeings.setScenicId(screeingsModel.getScenicId());
+			screeings.setSupplierId(screeingsModel.getSupplierId());
 			screeings.setCode(screeingsModel.getCode());
 			screeings.setStartTime(CommonUtils.convertStringToInteger(screeingsModel.getStartTime()));
 			screeings.setEndTime(CommonUtils.convertStringToInteger(screeingsModel.getEndTime()));
@@ -187,7 +198,7 @@ public class AddActingEngine {
 		for (AreaModel areaModel : areaModelList) {
 			areaNameList.add(areaModel.getName());
 		}
-		Area area = new Area();
+		AreaQuery area = new AreaQuery();
 		area.setAreaNameList(areaNameList);
 		area.setScenicId(scenicId);
 		ArrayList<Area> areaList = areaReadMapper.selectAreasByParam(area);

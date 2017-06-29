@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pzj.commons.utils.CheckUtils;
+import com.pzj.commons.utils.PropertyLoader;
 import com.pzj.core.common.exception.StockException;
 import com.pzj.core.product.common.exception.TheaterExceptionCode;
 import com.pzj.core.product.entity.SeatRecord;
@@ -48,12 +49,12 @@ public class SeatRecordCreateEngine {
 	private SeatStockEngine seatStockEngine;
 	@Resource
 	private SeatRecordWriteEngine seatRecordWriteEngine;
-
 	@Resource(name = "idGenerater")
 	private IDGenerater idGenerater;
+	@Resource(name = "propertyLoader")
+	private PropertyLoader propertyLoader;
 
-	public Boolean createSeatRecord(SeatRecordCreateReqModel createReqModel, ServiceContext serviceContext)
-			throws Exception {
+	public Boolean createSeatRecord(SeatRecordCreateReqModel createReqModel, ServiceContext serviceContext) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("The parameter to create the seat record is {} ", JSONConverter.toJson(createReqModel));
 		}
@@ -79,7 +80,7 @@ public class SeatRecordCreateEngine {
 				seatInfoIt.remove();
 			}
 		}
-		if (CheckUtils.isNull(seatInfoModels.size())) {
+		if (CheckUtils.isNull(seatInfoModels) || seatInfoModels.size() == 0) {
 			throw new StockException(TheaterExceptionCode.SEAT_RECORD_RULE_HAS_BEEN_OCCUPIED.getMsg());
 		}
 		createReqModel.setSeatInfos(seatInfoModels);
@@ -118,8 +119,9 @@ public class SeatRecordCreateEngine {
 		if (CheckUtils.isNotNull(createReqModel.getLockSeatType())) {
 			LockSeatType lockSeatType = createReqModel.getLockSeatType();
 			//如果是临时锁座,那么计算失效时间
-			if (lockSeatType.getState() == LockSeatType.LONG_VALID.getState()) {
-				Date expirationTime = new Date(createTime.getTime() + 15 * 60000);
+			if (lockSeatType.getState() == LockSeatType.TMP_VALID.getState()) {
+				Date expirationTime = new Date(createTime.getTime()
+						+ Integer.valueOf(propertyLoader.getProperty("stock_conf", "lock_valid_time", "30")) * 60000);
 				seatRecord.setExpirationTime(expirationTime);
 			}
 		}
@@ -137,7 +139,7 @@ public class SeatRecordCreateEngine {
 			createSeatRecord.setSeatName(seatInfoModel.getSeatName());
 			createSeatRecord.setRecordId(recordId);
 			createSeatRecord.setAreaId(seatInfoModel.getAreaId());
-			createSeatRecord.setRecordUnique(seatRecordWriteEngine.recordUnique(createReqModel.getScreeingId(),
+			createSeatRecord.setRecordUnique(SeatRecordUtil.recordUnique(createReqModel.getScreeingId(),
 					seatInfoModel.getSeatId(), createReqModel.getTheaterDate(), null));
 			seatRecords.add(createSeatRecord);
 		}

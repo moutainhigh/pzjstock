@@ -1,7 +1,7 @@
 package com.pzj.core.product.service;
 
 import com.pzj.core.product.model.OccupyStockReqsModel;
-import com.pzj.core.product.model.QueryValidSeatRecordResponse;
+import com.pzj.core.product.model.OccupyStockResponse;
 import com.pzj.core.product.model.ReleaseStockReqsModel;
 import com.pzj.core.product.model.seatRecord.SeatRecordCreateReqModel;
 import com.pzj.core.product.model.seatRecord.SeatRecordUpdateReqModel;
@@ -72,20 +72,32 @@ public interface SeatRecordService {
 	 *
 	 * @apiSuccess (响应数据) {int} errorCode 错误码
 	 * @apiSuccess (响应数据) {String} errorMsg 错误说明
-	 * @apiSuccess (响应数据) {Boolean=true：成功,false：失败} data 是否占座成功
+	 * @apiSuccess (响应数据) {OccupyStockResponse} data 占座异常数据
 	 *
 	 * @apiSuccessExample {json} 响应数据示例
 	 *
 	 * {
-	 *     "errorCode" : 10000,
-	 *     "errorMsg" : null,
-	 *     "data" : true
+	 *     "errorCode" : 15052,
+	 *     "errorMsg" : "对不起，该产品库存不足，当前还剩 1 份，请重新选择购买数量",
+	 *     "data" : {
+	 *     		"productId":855377373078040576,
+	 *     		"stockId":23154,
+	 *     		"stockRuleId":2216619741565878,
+	 *     		"stockType":1,
+	 *     		"remainNum":1,
+	 *     		"travelDate":"Jun 22, 2017 12:00:00 AM"
+	 *     }
 	 * }
 	 * @param occupyStockReqsModel
 	 */
-	Result<Boolean> occupyStock(OccupyStockReqsModel occupyStockReqsModel);
+	Result<OccupyStockResponse> occupyStock(OccupyStockReqsModel occupyStockReqsModel);
+
+	Result<Boolean> occupyStockForDock(OccupyStockReqsModel occupyStockReqsModel);
 
 	/**
+	 * 释放下单及预占的座位
+	 * 请使用releaseStock接口。
+	 *
 	* @api {dubbo} com.pzj.core.product.service.SeatRecordService#releaaseStock 释放下单及预占的座位
 	* @apiName 释放下单及预占的座位
 	* @apiGroup SAAS&ERP 座位
@@ -142,7 +154,14 @@ public interface SeatRecordService {
 	* }
 	*
 	*/
+	@Deprecated
 	Result<Boolean> releaaseStock(ReleaseStockReqsModel releaseStockReqsModel, ServiceContext context);
+
+	Result<Boolean> releaseStock(ReleaseStockReqsModel releaseStockReqsModel);
+
+	Result<Boolean> releaaseStockForDock(ReleaseStockReqsModel releaseStockReqsModel);
+
+	Result<Boolean> releaseStockForDock(ReleaseStockReqsModel releaseStockReqsModel);
 
 	/**
 	* @api {dubbo} com.pzj.core.product.service.SeatRecordService#releaseSeat 释放锁定的座位及库存
@@ -161,7 +180,7 @@ public interface SeatRecordService {
 	* @apiParam (SeatRecordUpdateReqModel) {SeatInfoModel} seatInfos 座位信息集合
 	*
 	* @apiParam (SeatInfoModel) {Long} seatId 座位id
-	* @apiParam (SeatInfoModel) {Long} areaId 区域id
+	* @apiParam (SeatInfoModel) {Long} [areaId] 区域id
 	*
 	*
 	* @apiParamExample {json} 请求示例

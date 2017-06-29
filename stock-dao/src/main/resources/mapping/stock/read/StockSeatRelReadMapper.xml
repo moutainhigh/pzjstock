@@ -56,7 +56,8 @@
 		select
 			id,
 			stock_id,
-			seat_num
+			seat_num,
+			product_id
 		from
 			stock_seat_rel
 		where

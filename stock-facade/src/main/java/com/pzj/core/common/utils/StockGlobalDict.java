@@ -47,8 +47,19 @@ public class StockGlobalDict {
 		// 无需占座
 		public static final Integer noNeedSeat = 0;
 		// 预选
-		public static final Integer preemptionSeat = 30;
+		public static final Integer preemptionSeat = 40;
 		// 占座
-		public static final Integer occupyingSeat = 40;
+		public static final Integer occupyingSeat = 20;
+	}
+
+	/**
+	 * 释放座位类型
+	 * 使用的接口是 {@link SeatRecordService#releaaseStock}
+	 */
+	public static class ReleaseFlag{
+		// 取消订单
+		public static final Integer cancelOrder = 1;
+		// 退票
+		public static final Integer refunds = 2;
 	}
 }

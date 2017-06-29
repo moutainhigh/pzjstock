@@ -9,6 +9,7 @@ import java.util.Date;
 
 import javax.annotation.Resource;
 
+import com.pzj.framework.armyant.junit.spring.ArmyantSpringRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ import com.pzj.framework.entity.QueryResult;
  * @author dongchunfu
  * @version $Id: ScreeingsServiceTest.java, v 0.1 2016年8月1日 下午2:48:55 dongchunfu Exp $
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(ArmyantSpringRunner.class)
 @ContextConfiguration(locations = { "classpath*:META-INF/spring/applicationContext.xml" })
 public class ScreeingsServiceTest {
 
@@ -116,7 +117,7 @@ public class ScreeingsServiceTest {
 		logger.info("testQueryTheaterScreeing result : {}", JSONConverter.toJson(result));
 	}
 
-	//	@Test
+	@Test
 	@OneCase("/com/pzj/core/product/ScreeningService/createScreenings.json")
 	public void createScreenings(@TestData CreateScreeningsReqModel createScreeningsReqModel) {
 		Result<Long> result = screeingsService.createScreenings(createScreeningsReqModel);

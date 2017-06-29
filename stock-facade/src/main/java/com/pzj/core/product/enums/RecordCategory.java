@@ -14,9 +14,9 @@ import com.pzj.core.product.exception.errorcode.ActingExceptionCode;
  */
 public enum RecordCategory {
 	/**
-	 * 座位类型  1、可选 2、已售 3、锁定 4、预选
+	 * 座位类型  10、可选 20、已售 30、锁定 40、预选
 	 */
-	OPTIONAL(1), SOLD(2), LOCKING(3), RESERVED(4);
+	OPTIONAL(10), SOLD(20), LOCKING(30), RESERVED(40);
 	/** 状态值. */
 	private int state;
 

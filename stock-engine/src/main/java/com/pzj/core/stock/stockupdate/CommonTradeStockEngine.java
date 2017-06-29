@@ -48,23 +48,22 @@ public class CommonTradeStockEngine {
 	 * @return Boolean
 	 */
 	@Transactional(value = "stock.transactionManager", timeout = 2)
-	public Boolean occupyStock(List<OccupyStockRequestModel> orderStockModelList) {
+	public CommonTradeOpeStockModel occupyStock(List<OccupyStockRequestModel> orderStockModelList) {
 		logger.info("CommonTradeStockEngine occupyStock:::" + JSONConverter.toJson(orderStockModelList));
 		ParamModel paramModel = convert(orderStockModelList, 1);
 		if (!paramModel.paramIsOk()) {
 			throw new ParameterErrorException(paramModel.getParamErrorMsg());
 		}
-		Boolean flag = Boolean.FALSE;
+
 		CommonTradeOpeStockModel commonOperateModel = getOperateStocks(orderStockModelList, 1);
 		if (!CommonUtils.checkCollectionIsNull(commonOperateModel.getReleaseStocks())) {
 			releaseStockEngine.releaseStock(commonOperateModel.getReleaseStocks());
-			flag = Boolean.TRUE;
 		}
 		if (!CommonUtils.checkCollectionIsNull(commonOperateModel.getOccupyStocks())) {
 			occupyStockEngine.occupyStock(commonOperateModel.getOccupyStocks());
-			flag = Boolean.TRUE;
 		}
-		return flag;
+
+		return commonOperateModel;
 	}
 
 	/**
@@ -143,6 +142,8 @@ public class CommonTradeStockEngine {
 
 	private CommonTradeOpeStockModel getOperateStocks(List<OccupyStockRequestModel> stockModelList, Integer operateType) {
 		CommonTradeOpeStockModel commonTradeOpeStock = new CommonTradeOpeStockModel();
+		commonTradeOpeStock.setTransactionId(stockModelList.get(0).getTransactionId());
+		commonTradeOpeStock.setProductId(stockModelList.get(0).getProductId());
 		List<OccupyStockRequestModel> occupyStocks = new ArrayList<OccupyStockRequestModel>();
 		List<OccupyStockRequestModel> releaseStocks = new ArrayList<OccupyStockRequestModel>();
 		Iterator<OccupyStockRequestModel> itera = stockModelList.iterator();
@@ -150,6 +151,7 @@ public class CommonTradeStockEngine {
 		LockRecord lockRecord = null;
 		StockQueryRequestModel model = null;
 		Stock stock = null;
+		Integer occupyNum = 0, releaseNum = 0;
 		while (itera.hasNext()) {
 			stockModel = itera.next();
 			lockRecord = lockRecordWriteMapper.queryLockRecordByTranPro(stockModel.getTransactionId(),
@@ -166,6 +168,8 @@ public class CommonTradeStockEngine {
 					if (historyLockNum > 0) {
 						stockModel.setStockNum(historyLockNum);
 						releaseStocks.add(stockModel);
+
+						releaseNum += stockModel.getStockNum();
 					}
 				} else if (curOccupyNum == historyLockNum) {
 					itera.remove();
@@ -176,8 +180,11 @@ public class CommonTradeStockEngine {
 						BeanUtils.copyProperties(stockModel, tempStockModel);
 						tempStockModel.setStockNum(historyLockNum);
 						releaseStocks.add(tempStockModel);
+
+						releaseNum += tempStockModel.getStockNum();
 					}
 					occupyStocks.add(stockModel);
+					occupyNum += stockModel.getStockNum();
 				}
 				model = new StockQueryRequestModel();
 				model.setRuleId(stockModel.getStockRuleId());
@@ -190,6 +197,7 @@ public class CommonTradeStockEngine {
 					tempStockModel.setStockId(stock.getId());
 				}
 				stockModel.setStockId(stock.getId());
+
 			} else {
 				stockModel.setStockId(lockRecord.getStockId());
 				releaseStocks.add(stockModel);
@@ -197,6 +205,16 @@ public class CommonTradeStockEngine {
 		}
 		commonTradeOpeStock.setOccupyStocks(occupyStocks);
 		commonTradeOpeStock.setReleaseStocks(releaseStocks);
+		opeStock(occupyNum, releaseNum, commonTradeOpeStock);
 		return commonTradeOpeStock;
 	}
+
+	private void opeStock(Integer occupyNum, Integer releaseNum, CommonTradeOpeStockModel commonTradeOpeStock) {
+		String type = occupyNum > releaseNum ? CommonTradeOpeStockModel.OCCUPY_STOCK
+				: CommonTradeOpeStockModel.RELEASE_STOCK;
+		Integer num = Math.abs(occupyNum - releaseNum);
+		commonTradeOpeStock.setOpeNum(num);
+		commonTradeOpeStock.setType(num == 0 ? "" : type);
+	}
+
 }

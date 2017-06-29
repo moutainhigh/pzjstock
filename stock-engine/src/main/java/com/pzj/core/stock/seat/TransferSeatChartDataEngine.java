@@ -1,7 +1,9 @@
 package com.pzj.core.stock.seat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -101,15 +103,20 @@ public class TransferSeatChartDataEngine {
 
 	private List<TheaterInfo> initTheaters(List<Acting> actings) {
 		List<TheaterInfo> theaterInfos = new ArrayList<TheaterInfo>();
+		Map<Long, Boolean> scenicMap = new HashMap<>();
 		TheaterInfo theater = null;
 		for (Acting acting : actings) {
-			theater = new TheaterInfo();
-			theater.setTheaterId(acting.getScenicId());
-			theater.setSeatState(1);
-			theater.setSortType(1);
-			theater.setLineNum(100);
-			theater.setColumnNum(100);
-			theaterInfos.add(theater);
+			if (scenicMap.get(acting.getScenicId()) == null) {
+				theater = new TheaterInfo();
+				theater.setTheaterId(acting.getScenicId());
+				theater.setSeatState(1);
+				theater.setSortType(1);
+				theater.setLineNum(100);
+				theater.setColumnNum(100);
+				theaterInfos.add(theater);
+				scenicMap.put(acting.getScenicId(), true);
+			}
+
 		}
 		return theaterInfos;
 	}
@@ -155,9 +162,12 @@ public class TransferSeatChartDataEngine {
 		String[] rowData = seatMap.split(";");
 		for (String row : rowData) {
 			String[] seatInfo = row.split(",");
-			String prefixSeat = seatInfo[0];
+			String prefixSeat = null;
 
 			for (String seat : seatInfo) {
+				if (CommonUtils.checkSeatRowLegal(seat)) {
+					prefixSeat = seat;
+				}
 				if (seat.matches("^[0-9]+$")) {
 					String seatNum = prefixSeat + "_" + seat;
 					SeatChar seatChar = new SeatChar();
@@ -165,7 +175,7 @@ public class TransferSeatChartDataEngine {
 					seatChar.setAbscissa(CommonUtils.getLinePos(prefixSeat));
 					seatChar.setAreaId(seatChart.getAreaId());
 					seatChar.setColumnName(seat);
-					seatChar.setLineName(CommonUtils.getLinePos(prefixSeat) + "");
+					seatChar.setLineName(prefixSeat);
 					seatChar.setOrdinate(Integer.parseInt(seat));
 					seatChar.setScenicId(seatChart.getScenicId());
 					seatChar.setNameType(0);
@@ -186,6 +196,8 @@ public class TransferSeatChartDataEngine {
 		sb.append(seatChar.getAbscissa());
 		sb.append(":");
 		sb.append(seatChar.getOrdinate());
+		sb.append(":");
+		sb.append(seatChar.getAreaId());
 
 		Long crcUniq = CRCUtils.convertUniqueLong(sb.toString());
 

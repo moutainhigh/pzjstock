@@ -26,6 +26,7 @@
 	            <value type="java.lang.String">classpath*:jdbc.properties</value>
 	            <value type="java.lang.String">classpath*:logback.xml</value>
 	            <value type="java.lang.String">classpath*:dubbo.properties</value>
+	            <value type="java.lang.String">classpath*:stock_conf.properties</value>
 	        </list>
 	    </property>
 	</bean>
@@ -42,6 +43,7 @@
 
 	<!-- 导入配置 -->
 	<import resource="classpath*:META-INF/spring/stock*.xml"/>
+	<import resource="classpath*:META-INF/property/property.xml"/>
 	
 	<!-- enable autowire -->
 	<context:annotation-config />
@@ -55,5 +57,14 @@
 
 	<bean id="orangeConfig" class="com.pzj.orange.client.OrangeConfig" >
 	    <property name="sysName" value="stock_service"/>
+	</bean>
+
+	<bean id="stockConfig" class="com.pzj.core.context.StockConfig">
+		<!--<property name="configs">
+			<bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+				<property name="location" value="classpath:/stock.properties" />
+				<property name="fileEncoding" value="UTF-8" />
+			</bean>
+		</property>-->
 	</bean>
 </beans>

@@ -53,8 +53,8 @@ public class OccupyStockReqModel implements Serializable {
 
 	/**
 	 * 占座类型
-	 * 1：下单占座
-	 * 2：预约占座
+	 * 20：下单占座
+	 * 40：预约占座
 	 */
 	private Integer occupyType;
 

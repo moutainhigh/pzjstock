@@ -55,6 +55,7 @@ public class StockExceptionCode {
 
 	public static final int STOCK_SHORTAGE_ERR_CODE = 15052;
 	public static final String STOCK_SHORTAGE_ERR_MSG = "锁定库存数不可大于现有库存";
+	public static final String STOCK_SHORTAGE_ERR_MSG_FORMAT = "对不起，该产品库存不足，当前还剩 %1$s 份，请重新选择购买数量";
 
 	public static final int STOCK_QUERY_ERR_CODE = 15053;
 	public static final String STOCK_QUERY_ERR_MSG = "查询库存数据异常";
@@ -73,9 +74,10 @@ public class StockExceptionCode {
 
 	public static final int MAX_STOCK_NUM_ERR_CODE = 15058;
 	public static final String MAX_STOCK_NUM_ERR_MSG = "超过库存最大数量";
+	public static final String MAX_STOCK_NUM_ERR_MSG_FORMAT = "对不起，该产品超过库存最大数量 %1$s 个 ";
 
 	public static final int STOCK_EXPIRE_ERR_CODE = 15059;
-	public static final String STOCK_EXPIRE_ERR_MSG = "库存已经过期";
+	public static final String STOCK_EXPIRE_ERR_MSG = "库存已经过期,占库存不能晚于今天";
 
 	public static final int RELEASE_STOCK_NUM_ERR_CODE = 15060;
 	public static final String RELEASE_STOCK_NUM_ERR_MSG = "解锁库存数不可大于已锁库存";

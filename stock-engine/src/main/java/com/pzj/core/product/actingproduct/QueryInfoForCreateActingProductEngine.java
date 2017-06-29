@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.pzj.core.product.entity.Acting;
 import com.pzj.core.product.entity.Area;
+import com.pzj.core.product.entity.AreaQuery;
 import com.pzj.core.product.entity.Screeings;
 import com.pzj.core.product.model.ActingProductQueryRequstModel;
 import com.pzj.core.product.model.ThreeDulpe;
@@ -27,38 +28,38 @@ import com.pzj.framework.context.ServiceContext;
 @Component(value = "queryInfoForCreateActingProductEngine")
 public class QueryInfoForCreateActingProductEngine {
 
-    @Autowired
-    private ActingReadMapper    actingReadMapper;
-    @Autowired
-    private AreaReadMapper      areaReadMapper;
-    @Autowired
-    private ScreeingsReadMapper screeingsReadMapper;
+	@Autowired
+	private ActingReadMapper actingReadMapper;
+	@Autowired
+	private AreaReadMapper areaReadMapper;
+	@Autowired
+	private ScreeingsReadMapper screeingsReadMapper;
 
-    public ThreeDulpe<ArrayList<Acting>, ArrayList<Screeings>, ArrayList<Area>> selectInfoForSkuProductEngine(ActingProductQueryRequstModel model,
-                                                                                                              ServiceContext context) {
+	public ThreeDulpe<ArrayList<Acting>, ArrayList<Screeings>, ArrayList<Area>> selectInfoForSkuProductEngine(
+			ActingProductQueryRequstModel model, ServiceContext context) {
 
-        Acting acting = new Acting();
-        Long scenicId = model.getScenicId();
-        acting.setScenicId(scenicId);
-        acting.setSupplierId(model.getSupplierId());
+		Acting acting = new Acting();
+		Long scenicId = model.getScenicId();
+		acting.setScenicId(scenicId);
+		acting.setSupplierId(model.getSupplierId());
 
-        ArrayList<Acting> actings = actingReadMapper.selectActingsByParam(acting);
+		ArrayList<Acting> actings = actingReadMapper.selectActingsByParam(acting);
 
-        Screeings screeings = new Screeings();
-        screeings.setScenicId(scenicId);
-        ArrayList<Screeings> screeingses = screeingsReadMapper.selectScreeingsesByParam(screeings);
+		Screeings screeings = new Screeings();
+		screeings.setScenicId(scenicId);
+		ArrayList<Screeings> screeingses = screeingsReadMapper.selectScreeingsesByParam(screeings);
 
-        Area area = new Area();
-        area.setScenicId(scenicId);
-        ArrayList<Area> areas = areaReadMapper.selectAreasByParam(area);
+		AreaQuery area = new AreaQuery();
+		area.setScenicId(scenicId);
+		ArrayList<Area> areas = areaReadMapper.selectAreasByParam(area);
 
-        ThreeDulpe<ArrayList<Acting>, ArrayList<Screeings>, ArrayList<Area>> result = new ThreeDulpe<ArrayList<Acting>, ArrayList<Screeings>, ArrayList<Area>>();
+		ThreeDulpe<ArrayList<Acting>, ArrayList<Screeings>, ArrayList<Area>> result = new ThreeDulpe<ArrayList<Acting>, ArrayList<Screeings>, ArrayList<Area>>();
 
-        result.setE(screeingses);
-        result.setF(areas);
-        result.setT(actings);
+		result.setE(screeingses);
+		result.setF(areas);
+		result.setT(actings);
 
-        return result;
-    }
+		return result;
+	}
 
 }

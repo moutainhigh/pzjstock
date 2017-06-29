@@ -5,6 +5,7 @@
 package com.pzj.core.product.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 
@@ -27,6 +28,8 @@ public class SeatRecordUpdate implements Serializable {
 	 * 状态
 	 */
 	private Integer state;
+
+	private Date updateTime;
 
 	/**
 	 * Getter method for property <tt>state</tt>.
@@ -82,4 +85,11 @@ public class SeatRecordUpdate implements Serializable {
 		this.transactionId = transactionId;
 	}
 
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
 }

@@ -1,5 +1,6 @@
 package com.pzj.core.product.common.exception;
 
+import com.pzj.core.common.exception.StockException;
 import com.pzj.framework.exception.ServiceException;
 
 /**
@@ -26,6 +27,16 @@ public class TheaterException extends ServiceException {
     public TheaterException(Throwable cause) {
         super(cause.getMessage(), cause);
         this.code = TheaterExceptionCode.ERROR.getCode();
+    }
+
+    public TheaterException(TheaterException theaterException) {
+        super(theaterException.getMessage(), theaterException);
+        this.code = theaterException.getCode();
+    }
+
+    public TheaterException(StockException stockException) {
+        super(stockException.getMessage(), stockException);
+        this.code = stockException.getErrCode();
     }
 
     public Integer getCode() {

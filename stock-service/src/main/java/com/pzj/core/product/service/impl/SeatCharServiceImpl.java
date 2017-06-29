@@ -1,19 +1,16 @@
 package com.pzj.core.product.service.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.pzj.core.product.model.seat.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.pzj.core.common.utils.CommonUtils;
-import com.pzj.core.product.model.seat.CreateSeatCharReqModel;
-import com.pzj.core.product.model.seat.ModifySeatCharReqModel;
-import com.pzj.core.product.model.seat.SeatReqModel;
-import com.pzj.core.product.model.seat.SeatRespModel;
-import com.pzj.core.product.model.seat.TheaterSeatChartRespModel;
 import com.pzj.core.product.seatchar.QuerySeatchartEngine;
 import com.pzj.core.product.seatchar.SeatCharWriteEngine;
 import com.pzj.core.product.service.SeatCharService;
@@ -132,9 +129,27 @@ public class SeatCharServiceImpl implements SeatCharService {
 	}
 
 	@Override
-	public Result<ArrayList<TheaterSeatChartRespModel>> queryTheaterSeatchart(Long theaterId) {
-		// TODO Auto-generated method stub
-		return null;
+	public Result<ArrayList<TheaterSeatChartRespModel>> queryTheaterSeatchart(Long theaterId,
+			ServiceContext serviceContext) {
+		Result<ArrayList<TheaterSeatChartRespModel>> result = new Result<ArrayList<TheaterSeatChartRespModel>>();
+		if (CommonUtils.checkLongIsNull(theaterId, Boolean.TRUE)) {
+			logger.error("query theater seatchart ,illegal request param:{}", theaterId);
+			CommonUtils.setParamErr(result);
+			return result;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("query theater seatchart,request param:{}", theaterId);
+		}
+		try {
+			result.setData(querySeatchartEngine.queryTheaterSeatchart(theaterId));
+		} catch (Throwable e) {
+			logger.error("query theater seatchart fail ,request:{},context:{}.", theaterId, serviceContext, e);
+			CommonUtils.convertException(e, result);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("query theater seatchart.result:{}", JSONConverter.toJson(result));
+		}
+		return result;
 	}
 
 	@Override
@@ -158,6 +173,27 @@ public class SeatCharServiceImpl implements SeatCharService {
 		if (logger.isDebugEnabled()) {
 			logger.debug("query area seat total.result:{}", JSONConverter.toJson(result));
 		}
+		return result;
+	}
+
+	@Override
+	public Result<SeatChartManyRespModel> querySeatChartBySeatId(final List<Long> seatIds) {
+
+		Result<SeatChartManyRespModel> result = new RpcCaller<SeatChartManyRespModel>(){
+			@Override
+			public SeatChartManyRespModel call() {
+				SeatChartManyRespModel respModel = null;
+
+				List<SeatChartRespModel> seats = querySeatchartEngine.querySeatChartBySeatId(seatIds);
+
+				if (seats != null){
+					respModel = new SeatChartManyRespModel();
+					respModel.setSeats(seats);
+				}
+				return respModel;
+			}
+		}.run();
+
 		return result;
 	}
 

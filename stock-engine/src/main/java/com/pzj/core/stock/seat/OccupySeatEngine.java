@@ -49,7 +49,8 @@ public class OccupySeatEngine {
 
 	@Transactional(value = "stock.transactionManager", timeout = 2)
 	public void occupySeat(ShowModel showModel) {
-		List<StockSeatRel> stockSeatRelList = checkSeatIsAvai(showModel);
+		//获取占座记录
+		List<StockSeatRel> stockSeatRelList = checkOccupySeat(showModel);
 
 		//初始化库存和座位关系集合
 		stockSeatRelList = initStockSeatRelInfo(showModel);
@@ -57,7 +58,7 @@ public class OccupySeatEngine {
 		stockSeatRelWriteMapper.addBatch(stockSeatRelList);
 	}
 
-	public List<StockSeatRel> checkSeatIsAvai(ShowModel showModel) {
+	public List<StockSeatRel> checkOccupySeat(ShowModel showModel) {
 		//检查该业务唯一id是否已经占座
 		int occupySeatNum = stockSeatRelReadMapper.countSeatNumByServiceId(showModel.getTransactionId());
 		if (occupySeatNum > 0) {

@@ -9,17 +9,13 @@ public class TheaterSeatChartRespModel implements java.io.Serializable {
 	 */
 	private Long seatId;
 	/**
+	 * 演艺id
+	 */
+	private Long scenicId;
+	/**
 	 * 区域id
 	 */
 	private Long areaId;
-	/**
-	 * 座位号（在同一个区域下唯一）;空区域：1，空被删区域：2；其他默认有组织好的座位号例如：A1_1
-	 */
-	private String seatNum;
-	/**
-	 * 座位名称,根据区域对应的行号和列号来组合而成（行列可编辑）
-	 */
-	private String seatName;
 	/**
 	 * 列
 	 */
@@ -29,9 +25,21 @@ public class TheaterSeatChartRespModel implements java.io.Serializable {
 	 */
 	private Integer row;
 	/**
-	 * 1：可售；2：锁定（此处锁定是座位图的锁定）
+	 * 名称类型（0：默认名称；1：自定义名称）
 	 */
-	private Integer saleState;
+	private Integer nameType;
+	/**
+	 * 自定义 的行名称
+	 */
+	private String lineName;
+	/**
+	 * 自定义的列名称
+	 */
+	private String columnName;
+	/**
+	 * 类型（1:是座位、2:不是座位、3:删除）
+	 */
+	private Integer type;
 
 	public Long getSeatId() {
 		return seatId;
@@ -41,28 +49,20 @@ public class TheaterSeatChartRespModel implements java.io.Serializable {
 		this.seatId = seatId;
 	}
 
+	public Long getScenicId() {
+		return scenicId;
+	}
+
+	public void setScenicId(Long scenicId) {
+		this.scenicId = scenicId;
+	}
+
 	public Long getAreaId() {
 		return areaId;
 	}
 
 	public void setAreaId(Long areaId) {
 		this.areaId = areaId;
-	}
-
-	public String getSeatNum() {
-		return seatNum;
-	}
-
-	public void setSeatNum(String seatNum) {
-		this.seatNum = seatNum;
-	}
-
-	public String getSeatName() {
-		return seatName;
-	}
-
-	public void setSeatName(String seatName) {
-		this.seatName = seatName;
 	}
 
 	public Integer getColumn() {
@@ -81,12 +81,36 @@ public class TheaterSeatChartRespModel implements java.io.Serializable {
 		this.row = row;
 	}
 
-	public Integer getSaleState() {
-		return saleState;
+	public Integer getNameType() {
+		return nameType;
 	}
 
-	public void setSaleState(Integer saleState) {
-		this.saleState = saleState;
+	public void setNameType(Integer nameType) {
+		this.nameType = nameType;
+	}
+
+	public String getLineName() {
+		return lineName;
+	}
+
+	public void setLineName(String lineName) {
+		this.lineName = lineName;
+	}
+
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public void setColumnName(String columnName) {
+		this.columnName = columnName;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
 	}
 
 }

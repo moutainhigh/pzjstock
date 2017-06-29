@@ -12,7 +12,7 @@
 	<dubbo:protocol accesslog="false" />
 	<!-- <context:property-placeholder location="classpath*:dubbo.properties"
 		ignore-unresolvable="true" /> -->
-		
+
 	<dubbo:application name="${dubbo.application.name}" />
 
 	<dubbo:registry id="stock_provider" address="${dubbo.registry.address}"
@@ -61,9 +61,13 @@
 	<dubbo:reference interface="com.pzj.dock.supplier.service.ISeatDockingService"
 		id="seatDockingService" version="1.0" registry="stock_consumer"
 		check="false" />
-		
+
 	<!-- 产品景区服务 -->
 	<dubbo:reference interface="com.pzj.core.product.common.service.IProductScenicService"
 		id="productScenicService" version="2.0" registry="stock_consumer"
-		check="false" />	
+		check="false" />
+
+	<!-- 依赖产品核心服务 -->
+	<dubbo:reference interface="com.pzj.core.product.common.service.ISpuProductService"
+		id="spuProductService" version="2.0" registry="stock_consumer" check="false" />
 </beans>

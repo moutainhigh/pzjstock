@@ -10,15 +10,15 @@ public enum SeatRecordCategory {
     // 待选
     Candidate(10, "待选"),
     // 锁座
-    LockSeat(20, "锁座"),
+    LockSeat(30, "锁座"),
     // 预选
-    PreemptionSeat(30,"预选"),
+    PreemptionSeat(40,"预选"),
     // 占座
-    OccupyingSeat(40, "占座");
+    OccupyingSeat(20, "占座");
 
     private int value;
     private String desc;
-
+    
     SeatRecordCategory(int value, String desc){
         this.value = value;
         this.desc = desc;

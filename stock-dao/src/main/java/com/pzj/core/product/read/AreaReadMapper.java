@@ -50,8 +50,6 @@ public interface AreaReadMapper {
 	 */
 	Integer queryCountScenicBySupplierId(@Param(value = "supplierId") Long supplierId);
 
-	ArrayList<Area> selectAreasByParam(@Param(value = "area") Area area);
-
 	/**
 	 * 查询剧场区域详情
 	 * @param supplierId

@@ -30,15 +30,21 @@
     </resultMap>
 
     <!-- 主键查询 -->
-    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
-        select <include refid="Base_Column_List" /> from assigned_order  where
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from assigned_order where
         assigned_id = #{assignedId, jdbcType=BIGINT}
     </select>
 
-    <!-- 删除 -->
     <select id="selectAssignedOrderByTransaction" resultMap="BaseResultMap">
-        select <include refid="Base_Column_List" /> from assigned_order  where
-        transaction_id = #{transactionId, jdbcType=BIGINT}
+        select <include refid="Base_Column_List" /> from assigned_order where
+        transaction_id = #{transactionId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectAssignedOrderByTransactionScreeningsArea" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from assigned_order where
+        transaction_id = #{transactionId, jdbcType=VARCHAR}
+        and screening_id = #{screeningsId, jdbcType=BIGINT}
+        and area_id = #{areaId, jdbcType=BIGINT}
     </select>
 
     <!-- 通用查询条件 -->

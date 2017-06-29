@@ -11,6 +11,7 @@
 		<result column="column_name" property="columnName" jdbcType="VARCHAR" />
 		<result column="seat_name" property="seatName" jdbcType="VARCHAR" />
 		<result column="type" property="type" jdbcType="TINYINT" />
+		<result column="name_type" property="nameType" jdbcType="INTEGER" />
 	</resultMap>
 	
 	<!-- 统计区域座位数量 -->
@@ -38,7 +39,7 @@
 	
 	<select id="querySeatByScenic" resultMap="BaseResultMap_optimized">
 		select
-			seat_id,scenic_id,area_id,abscissa,ordinate,line_name,column_name,type
+			seat_id,scenic_id,area_id,abscissa,ordinate,line_name,column_name,type,name_type
 		from
 			seat_char
 		where
@@ -48,7 +49,6 @@
 	</select>
 	
 	<select id="querySeatCharsByModel" resultMap="BaseResultMap_optimized">
-	
 	SELECT seat_id,
 		   scenic_id,
 		   area_id,
@@ -57,13 +57,19 @@
 		   line_name,
 		   column_name,
 		   type,
-		   CONCAT(line_name,column_name) as seat_name
-	 FROM seat_char
-		<trim prefixOverrides="and">
+		   CONCAT(line_name,'-',column_name) as seat_name,
+		   name_type
+	FROM seat_char
 			<where>
 				<if test="seatChar != null ">
 					<if test="seatChar.id != null">
 						and seat_id = #{seatChar.id}
+					</if>
+					<if test="seatChar.ids != null and seatChar.ids.size &gt; 0">
+						and seat_id in
+						<foreach collection="seatChar.ids" item="id" open="(" separator="," close=")">
+							#{id, jdbcType=BIGINT}
+						</foreach>
 					</if>
 					<if test="seatChar.scenicId != null">
 						and scenic_id = #{seatChar.scenicId}
@@ -77,6 +83,5 @@
 				</if>
 				or 1=2
 			</where>
-		</trim>
 	</select>
 </mapper>

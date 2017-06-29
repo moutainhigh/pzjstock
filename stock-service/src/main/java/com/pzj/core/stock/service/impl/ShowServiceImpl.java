@@ -2,6 +2,7 @@ package com.pzj.core.stock.service.impl;
 
 import javax.annotation.Resource;
 
+import com.pzj.core.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,11 +70,12 @@ public class ShowServiceImpl implements ShowService {
 			logger.debug("occupy seat. request: {}, context: {}.", showModel, serviceContext);
 		}
 
-		//检查座位是否可以占用
+		//校验线上环境座位是否可以占用
 		try {
-			occupySeatEngine.checkSeatIsAvai(showModel);
-		} catch (Exception e) {
-			logger.error("occupy seat data check fail. request: " + showModel + ", context: " + serviceContext, e);
+			occupySeatEngine.checkOccupySeat(showModel);
+		} catch (Throwable e) {
+			logger.error("occupy seat check seat is occupy fail. request: " + showModel + ", context: "
+					+ serviceContext, e);
 			CommonUtils.convertException(e, result);
 			return result;
 		}
@@ -81,16 +83,18 @@ public class ShowServiceImpl implements ShowService {
 		//调用对接系统占座
 		try {
 			if (null == showModel.getIsCallOffline() || showModel.getIsCallOffline() == ShowModel.CALL_OFFLINE_YES) {
-				DockSeatVO dockSeatVO = initDockSeatData.initDockSeat(showModel);
-				logger.info("invoke dock occupy seat param:{}", JSONConverter.toJson(dockSeatVO));
-				DockSeatVO retDockSeatVO = seatDockingService.havedockSeat(dockSeatVO);
-				logger.info("invoke dock occupy seat return result:{}", JSONConverter.toJson(retDockSeatVO));
-				if (!CommonUtils.checkObjectIsNull(retDockSeatVO)) {
-					String retCode = retDockSeatVO.getCode();
-					if (!CommonUtils.checkStringIsNullStrict(retCode) && !"10000".equals(retCode)) { // 10000 成功
-						throw new StockException("调用对接系统占座失败,占座失败的座位号有【" + retDockSeatVO.getSeats() + "】");
-					}
-				}
+//				DockSeatVO dockSeatVO = initDockSeatData.initDockSeat(showModel);
+//				logger.info("invoke dock occupy seat param:{}", JSONConverter.toJson(dockSeatVO));
+//				Result dockResult = seatDockingService.havedockSeat(dockSeatVO);
+//				logger.info("invoke dock occupy seat return result:{}", JSONConverter.toJson(dockResult));
+//
+//				if (dockResult == null) {
+//					LogUtil.loggerPrintInfo(logger, "调用对接系统占座失败，没有返回值， 参数为 {}", dockSeatVO);
+//					throw new StockException("调用对接系统占座失败,占座失败的座位号有");
+//				} else if (dockResult == null || !dockResult.isOk()) {
+//					LogUtil.loggerPrintInfo(logger, "调用对接系统占座失败，错误码为 {}，错误说明为 {}， 参数为 {}", dockResult.getErrorCode(), dockResult.getErrorMsg(), dockSeatVO);
+//					throw new StockException("调用对接系统占座失败,占座失败的座位号有");
+//				}
 			}
 		} catch (Throwable e) {
 			logger.error("occupy seat invoke dock occupy seat fail. request: " + showModel + ", context: "
@@ -145,16 +149,17 @@ public class ShowServiceImpl implements ShowService {
 		//调用对接系统释放座位
 		try {
 			if (null == showModel.getIsCallOffline() || showModel.getIsCallOffline() == ShowModel.CALL_OFFLINE_YES) {
-				DockSeatVO dockSeatVO = initDockSeatData.initDockSeat(showModel);
-				logger.info("invoke dock release seat param:{}", JSONConverter.toJson(dockSeatVO));
-				DockSeatVO retDockSeatVO = seatDockingService.refunddockSeat(dockSeatVO);
-				logger.info("invoke dock release seat return result:{}", JSONConverter.toJson(retDockSeatVO));
-				if (!CommonUtils.checkObjectIsNull(retDockSeatVO)) {
-					String retCode = retDockSeatVO.getCode();
-					if (!CommonUtils.checkStringIsNullStrict(retCode) && !"10000".equals(retCode)) { // 10000 成功
-						throw new StockException("调用对接系统释放座位失败,释放失败的座位号有【" + retDockSeatVO.getSeats() + "】");
-					}
-				}
+//				DockSeatVO dockSeatVO = initDockSeatData.initDockSeat(showModel);
+//				logger.info("invoke dock release seat param:{}", JSONConverter.toJson(dockSeatVO));
+//				Result dockResult = seatDockingService.refunddockSeat(dockSeatVO.getTransactionId());
+//				logger.info("invoke dock release seat return result:{}", JSONConverter.toJson(dockSeatVO.getTransactionId()));
+//				if (dockResult == null) {
+//					LogUtil.loggerPrintInfo(logger, "调用对接系统占座失败，没有返回值， 参数为 {}", dockSeatVO);
+//					throw new StockException("调用对接系统占座失败,占座失败的座位号有");
+//				} else if (dockResult == null || !dockResult.isOk()) {
+//					LogUtil.loggerPrintInfo(logger, "调用对接系统占座失败，错误码为 {}，错误说明为 {}， 参数为 {}", dockResult.getErrorCode(), dockResult.getErrorMsg(), dockSeatVO);
+//					throw new StockException("调用对接系统占座失败,占座失败的座位号有");
+//				}
 			}
 		} catch (Throwable e) {
 			logger.error("release seat invoke dock release seat fail. request: " + showModel + ", context: "
@@ -250,7 +255,29 @@ public class ShowServiceImpl implements ShowService {
 			logger.debug("rollback occupy seat. request: {}, context: {}.", showModel, serviceContext);
 		}
 
-		//回滚对接系统座位
+		//调用回滚对接系统座位
+		try {
+			if (null == showModel.getIsCallOffline() || showModel.getIsCallOffline() == ShowModel.CALL_OFFLINE_YES) {
+//				DockSeatVO dockSeatVO = initDockSeatData.rollInitDockSeat(showModel.getTransactionId());
+//				logger.info("invoke dock roll seat param:{}", JSONConverter.toJson(dockSeatVO));
+//				if (null != dockSeatVO) {
+//					DockSeatVO retDockSeatVO = seatDockingService.refunddockSeat(dockSeatVO);
+//					logger.info("invoke dock roll seat return result:{}", JSONConverter.toJson(retDockSeatVO));
+//					if (!CommonUtils.checkObjectIsNull(retDockSeatVO)) {
+//						String retCode = retDockSeatVO.getCode();
+//						if (!CommonUtils.checkStringIsNullStrict(retCode) && !"10000".equals(retCode)) { // 10000 成功
+//							throw new StockException("调用对接系统释放座位失败,释放失败的座位号有【" + retDockSeatVO.getSeats() + "】");
+//						}
+//					}
+//				}
+			}
+		} catch (Throwable e) {
+			logger.error(
+					"roll seat invoke dock roll seat fail. request: " + showModel + ", context: " + serviceContext, e);
+			CommonUtils.setResultErr(StockExceptionCode.INVOKE_OTHER_SERVICE_ERR_CODE,
+					StockExceptionCode.INVOKE_OTHER_SERVICE_ERR_MSG, result);
+			return result;
+		}
 
 		try {
 			rollbackOccupySeatEngine.rollbackOccupySeat(showModel);

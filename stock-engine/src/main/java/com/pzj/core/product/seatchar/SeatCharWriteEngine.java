@@ -37,10 +37,14 @@ public class SeatCharWriteEngine {
 	private SeatCharWriteMapper seatCharWriteMapper;
 
 	public List<SeatChar> querySeatCharByIds(List<Long> ids) {
-		if (ids == null || ids.isEmpty()) {
-			return Collections.emptyList();
+		List<SeatChar> seatChars = null;
+		if (ids != null && !ids.isEmpty()) {
+			seatChars = seatCharWriteMapper.selectSeatCharByIds(ids);
 		}
-		return seatCharWriteMapper.selectSeatCharByIds(ids);
+		if (seatChars == null){
+			seatChars = Collections.emptyList();
+		}
+		return seatChars;
 	}
 
 	public Boolean createSeatChar(CreateSeatCharReqModel createSeatCharReqModel) {
@@ -114,6 +118,8 @@ public class SeatCharWriteEngine {
 		sb.append(seatChar.getAbscissa());
 		sb.append(":");
 		sb.append(seatChar.getOrdinate());
+		sb.append(":");
+		sb.append(seatChar.getAreaId());
 
 		Long crcUniq = CRCUtils.convertUniqueLong(sb.toString());
 

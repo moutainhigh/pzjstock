@@ -1,10 +1,22 @@
 package com.pzj.core.product.seatRecord;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.stereotype.Component;
+
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import com.pzj.core.common.utils.CRCUtils;
-import com.pzj.core.product.area.AreaCommonInfo;
-import com.pzj.core.product.area.AreaSeatMode;
-import com.pzj.core.product.area.AreaSeatType;
 import com.pzj.core.product.area.AreaWriteEngine;
 import com.pzj.core.product.assigned.AssignedOrderWriteEngine;
 import com.pzj.core.product.common.exception.TheaterException;
@@ -12,461 +24,414 @@ import com.pzj.core.product.common.exception.TheaterExceptionCode;
 import com.pzj.core.product.entity.AssignedOrder;
 import com.pzj.core.product.entity.SeatChar;
 import com.pzj.core.product.entity.SeatRecord;
-import com.pzj.core.product.enums.SeatType;
 import com.pzj.core.product.model.OccupyStockReqModel;
 import com.pzj.core.product.model.OccupyStockReqsModel;
-import com.pzj.core.product.model.area.AreaModel;
 import com.pzj.core.product.seatchar.SeatCharWriteEngine;
 import com.pzj.core.product.write.SeatRecordWriteMapper;
-import com.pzj.core.stock.entity.Seat;
-import com.pzj.core.stock.entity.Stock;
-import com.pzj.core.stock.model.OccupyStockRequestModel;
-import com.pzj.core.stock.model.StockQueryRequestModel;
-import com.pzj.core.stock.service.StockService;
-import com.pzj.core.stock.stockquery.QueryStockByRuleEngine;
-import com.pzj.core.stock.stockquery.StockQueryParamEngine;
-import com.pzj.core.stock.stockupdate.CommonTradeStockEngine;
-import com.pzj.core.stock.write.StockRuleWriteMapper;
-import com.pzj.core.stock.write.StockWriteMapper;
-import com.pzj.framework.context.Result;
 import com.pzj.framework.converter.JSONConverter;
 import com.pzj.framework.idgen.IDGenerater;
-import com.pzj.framework.toolkit.TimeHelper;
-import org.joda.time.DateTime;
-import org.omg.CORBA.TIMEOUT;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * Created by Administrator on 2017-3-26.
  */
 @Component
-@Transactional(value = "stock.transactionManager")
 public class SeatRecordWriteEngine {
-    private static final Logger logger = LoggerFactory.getLogger(SeatRecordWriteEngine.class);
+	private static final Logger logger = LoggerFactory.getLogger(SeatRecordWriteEngine.class);
 
-    @Resource
-    private IDGenerater idGenerater;
-    @Resource
-    private SeatRecordWriteMapper seatRecordWriteMapper;
-    @Resource
-    private AssignedOrderWriteEngine assignedOrderWriteEngine;
-    @Resource
-    private AreaWriteEngine areaWriteEngine;
-    @Resource
-    private SeatCharWriteEngine seatCharWriteEngine;
-    @Resource
-    private CommonTradeStockEngine commonTradeStockEngine;
+	@Resource
+	private IDGenerater idGenerater;
+	@Resource
+	private SeatRecordWriteMapper seatRecordWriteMapper;
+	@Resource
+	private AssignedOrderWriteEngine assignedOrderWriteEngine;
+	@Resource
+	private AreaWriteEngine areaWriteEngine;
+	@Resource
+	private SeatCharWriteEngine seatCharWriteEngine;
+	@Resource
+	private SeatStockEngine seatStockEngine;
 
-    public Boolean occupyStock(OccupyStockReqsModel occupyStockReqsModel) {
-        if (occupyStockReqsModel == null){
-            throw new TheaterException(TheaterExceptionCode.PARAMETER_EMPTY);
-        }
+	public Boolean occupyStock(OccupyStockReqsModel occupyStockReqsModel) {
+		if (occupyStockReqsModel == null) {
+			throw new TheaterException(TheaterExceptionCode.PARAMETER_EMPTY);
+		}
 
-        List<OccupyStockReqModel> occupyStockReqs = occupyStockReqsModel.getOccupyStockReqs();
-        if (occupyStockReqs == null || occupyStockReqs.isEmpty()){
-            throw new TheaterException(TheaterExceptionCode.PARAMETER_EMPTY);
-        }
+		List<OccupyStockReqModel> occupyStockReqs = occupyStockReqsModel.getOccupyStockReqs();
+		if (occupyStockReqs == null || occupyStockReqs.isEmpty()) {
+			throw new TheaterException(TheaterExceptionCode.PARAMETER_EMPTY);
+		}
 
-        for (OccupyStockReqModel occupyStockReqModel : occupyStockReqs){
-            Boolean occupy = occupyStock(occupyStockReqModel);
-            if (!occupy){
-                throw new TheaterException();
-            }
-        }
+		List<AssignedOrder> assignedOrders = new ArrayList<>();
+		for (OccupyStockReqModel occupyStockReqModel : occupyStockReqs) {
+			AssignedOrder assignedOrder = occupyStock(occupyStockReqModel);
+			if (assignedOrder != null) {
+				assignedOrders.add(assignedOrder);
+			}
+		}
 
-        return true;
-    }
+		saveAssignedOrder(assignedOrders);
+		return true;
+	}
 
-    public Boolean occupyStock(OccupyStockReqModel occupyStockReqModel) {
-        checkOccupyParam(occupyStockReqModel);
+	private AssignedOrder occupyStock(OccupyStockReqModel occupyStockReqModel) {
+		// 占库存
+		seatStockEngine.occupyStock(occupyStockReqModel);
 
-        // 占库存
-        accountingForStock(occupyStockReqModel);
+		// 是否需要占座
+		boolean needOccupySeat = areaWriteEngine.needOccupySeat(occupyStockReqModel.getAreaId());
+		if (!needOccupySeat) {
+			return null;
+		}
 
-        // 是否需要占座。
-        if (!needOccupySeat(occupyStockReqModel)){
-             return true;
-        }
+		checkTheaterParam(occupyStockReqModel);
 
-        checkTheaterParam(occupyStockReqModel);
+		// 占座和释放座位
+		occupyingAndReleaseSeats(occupyStockReqModel.getTransactionId(), occupyStockReqModel.getScreeningsId(),
+				occupyStockReqModel.getAreaId(), occupyStockReqModel.getTravelDate(),
+				occupyStockReqModel.getOperator(), occupyStockReqModel.getOccupyType(),
+				occupyStockReqModel.getOccupySeatIds(), occupyStockReqModel.getReleaseSeatIds());
 
-        Integer occupyType = occupyStockReqModel.getOccupyType();
+		// 获取占座任务的基本描述信息
+		return assignedOrderWriteEngine.createAssignedOrderFrom(occupyStockReqModel);
+	}
 
-        // 获取占座任务的基本描述信息
-        AssignedOrder assignedOrder = assignedOrder(occupyType, occupyStockReqModel);
+	private void saveAssignedOrder(List<AssignedOrder> assignedOrdersNoGroup) {
+		if (assignedOrdersNoGroup == null || assignedOrdersNoGroup.isEmpty()) {
+			return;
+		}
 
-        // 占座和释放座位
-        occupyingAndReleaseSeats(assignedOrder, occupyType, occupyStockReqModel.getOccupySeatIds(), occupyStockReqModel.getReleaseSeatIds());
+		String transactionId = assignedOrdersNoGroup.get(0).getTransactionId();
 
-        // 保存占座任务的基本描述信息
-        saveAssignedOrder(assignedOrder);
+		List<AssignedOrder> assignedOrders = assignedOrderWriteEngine.queryAssignedOrderByTransaction(transactionId);
+		if (assignedOrders == null || assignedOrders.isEmpty()) {
+			assignedOrders = groupAssignedOrder(assignedOrdersNoGroup);
+		} else {
+			for (AssignedOrder assignedOrder : assignedOrders) {
+				if (assignedOrder.getState() != 1) {
+					TheaterExceptionCode code = TheaterExceptionCode.ASSIGNED_RULE_NO_REDISTRIBUTION;
+					String message = code.getTemplateMessage(assignedOrder.getAssignedId(), assignedOrder.getState());
+					throw new TheaterException(code.getCode(), message);
+				}
+			}
+		}
 
-        return true;
-    }
+		for (AssignedOrder assignedOrder : assignedOrders) {
+			// 更新待分配记录
+			updateAssignedOrderOccupiedNum(assignedOrder);
+			// 保存占座任务的基本描述信息
+			assignedOrderWriteEngine.saveAssignedOrder(assignedOrder);
+		}
+	}
 
-    private void checkOccupyParam(OccupyStockReqModel occupyStockReqModel){
-        if (occupyStockReqModel == null){
-            throw new TheaterException(TheaterExceptionCode.PARAMETER_EMPTY);
-        }
-        if (occupyStockReqModel.getTransactionId() == null){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_TRANSACTION);
-        }
-        if (occupyStockReqModel.getTransactionId().trim().equals("")){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_TRANSACTION);
-        }
-        if (occupyStockReqModel.getOperator() == null || occupyStockReqModel.getOperator() == 0){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_OPERATOR);
-        }
-        if (occupyStockReqModel.getOutQuantity() == null){
-            throw new TheaterException(TheaterExceptionCode.OCCUPYED_STOCK_NULL_OUT_QUANTITY);
-        }
-        if (occupyStockReqModel.getStockRuleId() == null || occupyStockReqModel.getStockRuleId() == 0){
-            throw new TheaterException(TheaterExceptionCode.OCCUPYED_STOCK_NULL_RULE_ID);
-        }
+	/**
+	 * 将交易ID、场次ID、区域ID相同的待分配合并，合并是将总分配数合并。
+	 * @param assignedOrdersNoGroup
+	 * @return
+	 */
+	private List<AssignedOrder> groupAssignedOrder(List<AssignedOrder> assignedOrdersNoGroup) {
+		List<AssignedOrder> assignedOrders = new ArrayList<>();
 
-        Date travelDate = occupyStockReqModel.getTravelDate();
-        if (travelDate != null){
-            travelDate = formatTravelDate(travelDate);
-            occupyStockReqModel.setTravelDate(travelDate);
+		A: for (AssignedOrder assignedOrder : assignedOrdersNoGroup) {
+			AssignedOrder copy = assignedOrder.copy();
 
-            Date currentDate = formatTravelDate(new Date());
-            if (travelDate.getTime() < currentDate.getTime()){
-                throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_RULE_TRAVEL_DATE_EXPIRED);
-            }
-        }
+			B: for (AssignedOrder ad : assignedOrders) {
+				if (ad.getTransactionId().equals(copy.getTransactionId())
+						&& ad.getScreeningsId().equals(copy.getScreeningsId())
+						&& ad.getAreaId().equals(copy.getAreaId())) {
+					ad.setUnOccupiedNum(ad.getUnOccupiedNum() + copy.getUnOccupiedNum());
+					continue A;
+				}
+			}
 
-        if (occupyStockReqModel.getOccupySeatIds() == null){
-            occupyStockReqModel.setOccupySeatIds(Collections.EMPTY_LIST);
-        }
-        if (occupyStockReqModel.getReleaseSeatIds() == null){
-            occupyStockReqModel.setReleaseSeatIds(Collections.EMPTY_LIST);
-        }
+			assignedOrders.add(copy);
+		}
 
-    }
+		return assignedOrders;
+	}
 
-    private boolean needOccupySeat(OccupyStockReqModel occupyStockReqModel){
-        Long areaId = occupyStockReqModel.getAreaId();
-        if (areaId == null || areaId == 0){
-            return false;
-        }
-        AreaCommonInfo areaCommonInfo = areaWriteEngine.queryAreaCommonInfoByAreaId(areaId);
-        if (areaCommonInfo == null){
-            TheaterExceptionCode code = TheaterExceptionCode.AREA_NOT_EXIST;
-            String msg = code.getTemplateMessage(areaId);
-            throw new TheaterException(code.getCode(), msg);
-        }
-        boolean equals = AreaSeatType.RectangularSeat.equals(areaCommonInfo.getSeatType());
-        return equals;
-    }
+	/**
+	 * 校验占座参数是否完整
+	 * @param occupyStockReqModel
+	 */
+	private void checkTheaterParam(OccupyStockReqModel occupyStockReqModel) {
+		if (occupyStockReqModel.getAreaId() == null || occupyStockReqModel.getAreaId() == 0) {
+			throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_AREA);
+		}
+		if (occupyStockReqModel.getScreeningsId() == null || occupyStockReqModel.getScreeningsId() == 0) {
+			throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_SCREENING);
+		}
 
-    private Date formatTravelDate(Date travelDate){
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(travelDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-            /*DateTime dateTime = new DateTime(travelDate).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
-            travelDate = new Date(dateTime.getMillis());*/
-        return calendar.getTime();
-    }
+		Integer occupyType = occupyStockReqModel.getOccupyType();
+		if (occupyType == null) {
+			throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_CATEGORY);
+		}
 
+		SeatRecordCategory.checkSeatRecordCategoryValue(occupyType);
 
-    private void accountingForStock(OccupyStockReqModel occupyStockReqModel) {
-        OccupyStockRequestModel occupyStockRequestModel = new OccupyStockRequestModel();
-        occupyStockRequestModel.setTransactionId(occupyStockReqModel.getTransactionId());
-        occupyStockRequestModel.setProductId(occupyStockReqModel.getProductId());
-        occupyStockRequestModel.setUserId(occupyStockReqModel.getOperator());
-        occupyStockRequestModel.setStockNum(occupyStockReqModel.getOutQuantity());
-        occupyStockRequestModel.setStockRuleId(occupyStockReqModel.getStockRuleId());
-        occupyStockRequestModel.setShowDate(occupyStockReqModel.getTravelDate());
-        List<OccupyStockRequestModel> orderStockModelList = new ArrayList();
-        orderStockModelList.add(occupyStockRequestModel);
+		Date travelDate = occupyStockReqModel.getTravelDate();
+		if (travelDate == null) {
+			throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_TRAVEL_DATE);
+		}
+	}
 
-        commonTradeStockEngine.occupyStock(orderStockModelList);
-    }
+	/**
+	 * 对座位进行校验，释放座位，占座位。
+	 *  @param transactionId
+	 * @param screeningsId
+	 * @param areaId
+	 * @param travelDate
+	 * @param operatorId
+	 * @param occupyType
+	 * @param occupySeatIds
+	 * @param releaseSeatIds
+	 */
+	private int occupyingAndReleaseSeats(String transactionId, Long screeningsId, Long areaId, Date travelDate,
+			Long operatorId, Integer occupyType, List<Long> occupySeatIds, List<Long> releaseSeatIds) {
 
-    private void checkTheaterParam(OccupyStockReqModel occupyStockReqModel){
-        if (occupyStockReqModel.getAreaId() == null || occupyStockReqModel.getAreaId() == 0){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_AREA);
-        }
-        if (occupyStockReqModel.getScreeningsId() == null || occupyStockReqModel.getScreeningsId() == 0){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_SCREENING);
-        }
+		if (occupySeatIds == null) {
+			occupySeatIds = Collections.EMPTY_LIST;
+		}
+		if (releaseSeatIds == null) {
+			occupySeatIds = Collections.EMPTY_LIST;
+		}
 
-        Integer occupyType = occupyStockReqModel.getOccupyType();
-        if (occupyType == null){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_CATEGORY);
-        }
-        SeatRecordCategory.checkSeatRecordCategoryValue(occupyType);
-        if (occupyStockReqModel.getTravelDate() == null){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_NULL_TRAVEL_DATE);
-        }
-    }
+		if (Collections.EMPTY_LIST == occupySeatIds && Collections.EMPTY_LIST == releaseSeatIds) {
+			return 0;
+		}
 
-    private AssignedOrder assignedOrder(Integer occupyType, OccupyStockReqModel occupyStockReqModel){
-        AssignedOrder assignedOrder = null;
-        if (occupyType == 2) {
-            assignedOrder = assignedOrderWriteEngine.queryAssignedOrderByTransaction(occupyStockReqModel.getTransactionId());
-        }
+		// 获取需要占的座位信息
+		List<SeatChar> occupySeats = seatCharWriteEngine.querySeatCharByIds(occupySeatIds);
+		checkForInvalidSeatId(occupySeatIds, occupySeats, areaId);
 
-        if (assignedOrder == null) {
-            assignedOrder = new AssignedOrder();
-            assignedOrder.setTransactionId(occupyStockReqModel.getTransactionId());
-            assignedOrder.setUserId(occupyStockReqModel.getOperator());
-            assignedOrder.setScreeningsId(occupyStockReqModel.getScreeningsId());
-            assignedOrder.setAreaId(occupyStockReqModel.getAreaId());
-            assignedOrder.setTravelDate(occupyStockReqModel.getTravelDate());
-            assignedOrder.setUserId(occupyStockReqModel.getOperator());
-            assignedOrder.setCreateTime(new Date());
-            assignedOrder.setOccupiedNum(0);
-            assignedOrder.setUnOccupiedNum(occupyStockReqModel.getOutQuantity());
-            assignedOrder.setState(1);
-            assignedOrder.setSpuId(occupyStockReqModel.getSpuId());
-        } else if (assignedOrder.getState() != 1){
-            TheaterExceptionCode code = TheaterExceptionCode.ASSIGNED_RULE_NO_REDISTRIBUTION;
-            String message = code.getTemplateMessage(assignedOrder.getAssignedId(), assignedOrder.getState());
-            throw new TheaterException(code.getCode(), message);
-        }
-        return assignedOrder;
-    }
+		// 获取需要释放的座位信息
+		List<SeatChar> releaseSeats = seatCharWriteEngine.querySeatCharByIds(releaseSeatIds);
+		checkForInvalidSeatId(releaseSeatIds, releaseSeats, areaId);
 
+		// 查询场次、座位、游玩时间的有效的占座记录，所有需要占的和释放的
+		List<SeatRecord> existSeatRecords = null;
 
-    /**
-     * 对座位进行校验，释放座位，占座位。
-     * @param assignedOrder
-     * @param occupyType
-     * @param occupySeatIds
-     * @param releaseSeatIds
-     */
-    private void occupyingAndReleaseSeats(AssignedOrder assignedOrder, Integer occupyType, List<Long> occupySeatIds, List<Long> releaseSeatIds) {
-        if ((occupySeatIds == null || occupySeatIds.isEmpty()) && (releaseSeatIds == null || releaseSeatIds.isEmpty())){
-            return;
-        }
+		List<Long> seatIds = mergeList(occupySeatIds, releaseSeatIds);
+		if (seatIds != null && !seatIds.isEmpty()) {
+			existSeatRecords = seatRecordWriteMapper.selectExistValidSeatRecord(screeningsId, travelDate, seatIds);
+		}
 
-        List<SeatChar> occupySeats = seatCharWriteEngine.querySeatCharByIds(occupySeatIds);
-        List<SeatChar> releaseSeats = seatCharWriteEngine.querySeatCharByIds(releaseSeatIds);
+		if (existSeatRecords != null && !existSeatRecords.isEmpty()) {
+			// 检查是否有权占座
+			checkWhetherTheRightToOccupySeats(existSeatRecords, transactionId, operatorId);
 
-        {
-            List<Long> seatIds = mergeList(occupySeatIds, releaseSeatIds);
+			// 过滤掉已占的座位记录
+			filterOutTheOccupiedSeatRecords(existSeatRecords, occupySeats, occupyType);
 
-            checkSeats(seatIds, occupySeats, releaseSeats);
+			// 取消座位记录
+			releaseSeatRecord(existSeatRecords);
+		}
 
-            // 查询场次、座位、游玩时间的有效的占座记录
-            List<SeatRecord> existSeatRecords = seatRecordWriteMapper.selectExistValidSeatRecord(assignedOrder.getScreeningsId(), assignedOrder.getTravelDate(), seatIds);
+		// 占座位
+		return occupyingSeats(transactionId, screeningsId, travelDate, operatorId, occupyType, occupySeats);
+	}
 
-            if (existSeatRecords != null && !existSeatRecords.isEmpty()){
-                // 检查位是否座能被占
-                checkWhetherCanSeat(existSeatRecords, assignedOrder.getUserId(), assignedOrder.getTransactionId());
+	/**
+	 * 过滤掉已占的座位记录
+	 * @param existSeatRecords
+	 * @param occupySeats
+	 * @param occupyType
+	 */
+	private void filterOutTheOccupiedSeatRecords(List<SeatRecord> existSeatRecords, List<SeatChar> occupySeats,
+			Integer occupyType) {
+		if (existSeatRecords == null || existSeatRecords.isEmpty() || occupySeats == null || occupySeats.isEmpty()) {
+			return;
+		}
+		Map<Long, SeatRecord> existSeatRecordsMap = new HashMap<>(existSeatRecords.size());
+		for (SeatRecord seatRecord : existSeatRecords) {
+			existSeatRecordsMap.put(seatRecord.getSeatId(), seatRecord);
+		}
+		Iterator<SeatChar> iterator = occupySeats.iterator();
+		while (iterator.hasNext()) {
+			SeatChar next = iterator.next();
+			if (existSeatRecordsMap.containsKey(next.getId())) {
+				SeatRecord seatRecord = existSeatRecordsMap.get(next.getId());
+				// 请求的座位如果已经是占座状态（occupyType），则过滤掉，不需要重复占
+				if (seatRecord.getCategory().equals(occupyType)) {
+					existSeatRecords.remove(seatRecord);
+					iterator.remove();
+				}
+			}
+		}
+	}
 
-                filter(existSeatRecords, occupySeats, occupyType);
+	/**
+	 * 合并List
+	 * @param list1
+	 * @param list2
+	 * @param <T>
+	 * @return
+	 */
+	private <T> List<T> mergeList(List<T> list1, List<T> list2) {
+		List<T> mergeList = new ArrayList<>(list1.size() + list2.size());
+		mergeList.addAll(list1);
+		mergeList.addAll(list2);
+		return mergeList;
+	}
 
-                // 取消座位记录
-                cancelTheSeatRecord(existSeatRecords);
-            }
-        }
+	/**
+	 * 检查出无效的座位id
+	 * @param seatIds
+	 * @param seatChars
+	 */
+	private void checkForInvalidSeatId(List<Long> seatIds, List<SeatChar> seatChars, Long areaId) {
+		ArrayList<Long> tmp = new ArrayList<>(seatIds);
+		for (SeatChar seat : seatChars) {
+			if (!seat.getAreaId().equals(areaId)) {
+				TheaterExceptionCode code = TheaterExceptionCode.SEAT_RULE_AREA;
+				String msg = code.getTemplateMessage(seat.getId(), areaId, seat.getAreaId());
+				throw new TheaterException(code.getCode(), msg);
+			}
+			tmp.remove(seat.getId());
+		}
+		if (tmp.size() > 0) {
+			TheaterExceptionCode code = TheaterExceptionCode.SEAT_ILLEGAL_ID;
+			String msg = code.getTemplateMessage(seatIds);
+			throw new TheaterException(code.getCode(), msg);
+		}
+	}
 
-        // 占座位
-        occupyingSeats(assignedOrder, occupySeats, occupyType);
+	/**
+	 * 检查是否有权占座
+	 * @param existSeatRecords
+	 * @param transactionId
+	 * @param operator
+	 */
+	private void checkWhetherTheRightToOccupySeats(List<SeatRecord> existSeatRecords, String transactionId,
+			Long operator) {
+		if (existSeatRecords == null || existSeatRecords.isEmpty()) {
+			return;
+		}
 
-        int latestOccupiedNum = seatRecordWriteMapper.countExistValidSeatRecordByTransactionId(assignedOrder.getTransactionId());
+		for (SeatRecord seatRecord : existSeatRecords) {
+			Integer category = seatRecord.getCategory();
+			if (SeatRecordCategory.LockSeat.equals(category)) {
+				if (!operator.equals(seatRecord.getOperatorId())) {
+					// 不是当前操作人锁定的座位
+					TheaterExceptionCode code = TheaterExceptionCode.SEAT_RECORD_RULE_NOT_THE_OWNER;
+					String msg = code
+							.getTemplateMessage(seatRecord.getRecordId(), seatRecord.getOperatorId(), operator);
+					throw new TheaterException(code.getCode(), msg);
+				}
+			} else if (SeatRecordCategory.PreemptionSeat.equals(category)
+					|| SeatRecordCategory.OccupyingSeat.equals(category)) {
+				if (!transactionId.equals(seatRecord.getTransactionId())) {
+					// 不是当前交易ID预占的座位
+					TheaterExceptionCode code = TheaterExceptionCode.SEAT_RECORD_RULE_NOT_THE_TRANSACTION;
+					String msg = code.getTemplateMessage(seatRecord.getRecordId(), seatRecord.getTransactionId(),
+							transactionId);
+					throw new TheaterException(code.getCode(), msg);
+				}
+			} else {
+				throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_ILLEGAL_CATEGORY);
+			}
+		}
+	}
 
-        if (latestOccupiedNum == assignedOrder.getUnOccupiedNum()){
-            assignedOrder.setState(0);
-        } else if (latestOccupiedNum > assignedOrder.getUnOccupiedNum()){
-            throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_RULE_SEATS_GREATER_STOCK);
-        }
+	/**
+	 * 取消座位记录
+	 * @param existSeatRecords
+	 */
+	private void releaseSeatRecord(List<SeatRecord> existSeatRecords) {
+		if (existSeatRecords == null || existSeatRecords.isEmpty()) {
+			return;
+		}
+		Date currentDate = new Date();
+		List<SeatRecord> cancelSeatRecords = new ArrayList<>(existSeatRecords.size());
+		for (SeatRecord seatRecord : existSeatRecords) {
+			SeatRecord updateSeatRecord = new SeatRecord();
+			updateSeatRecord.setRecordId(seatRecord.getRecordId());
+			updateSeatRecord.setState(0);
+			updateSeatRecord.setUpdateTime(currentDate);
 
-        assignedOrder.setOccupiedNum(latestOccupiedNum);
-    }
+			Long recordUnique = SeatRecordUtil.recordUnique(seatRecord.getScreeningId(), seatRecord.getSeatId(),
+					seatRecord.getTravelDate(), UUID.randomUUID().toString());
 
-    private void filter(List<SeatRecord> existSeatRecords, List<SeatChar> occupySeats, Integer occupyType) {
-        if (existSeatRecords == null || existSeatRecords.isEmpty() || occupySeats == null || occupySeats.isEmpty()){
-            return;
-        }
-        Map<Long, SeatRecord> existSeatRecordsMap = new HashMap<>(existSeatRecords.size());
-        for (SeatRecord seatRecord : existSeatRecords){
-            existSeatRecordsMap.put(seatRecord.getSeatId(), seatRecord);
-        }
-        Iterator<SeatChar> iterator = occupySeats.iterator();
-        while (iterator.hasNext()){
-            SeatChar next = iterator.next();
-            if (existSeatRecordsMap.containsKey(next.getId())){
-                SeatRecord seatRecord = existSeatRecordsMap.get(next.getId());
-                if (seatRecord.getCategory().equals(occupyType)){
-                    existSeatRecords.remove(seatRecord);
-                    iterator.remove();
-                }
-            }
-        }
-    }
+			updateSeatRecord.setRecordUnique(recordUnique);
 
-    private <T> List<T> mergeList( List<T> list1, List<T> list2){
-        int occupySeatIdsSize = listSize(list1);
-        int releaseSeatIdsSize = listSize(list2);
-        if (occupySeatIdsSize == 0 && releaseSeatIdsSize == 0){
-            return null;
-        }
+			cancelSeatRecords.add(updateSeatRecord);
+		}
+		seatRecordWriteMapper.updateSeatRecords(cancelSeatRecords);
+	}
 
-        List<T> mergeList = new ArrayList<>(occupySeatIdsSize + occupySeatIdsSize);
-        if (occupySeatIdsSize > 0) {
-            mergeList.addAll(list1);
-        }
-        if (releaseSeatIdsSize > 0) {
-            mergeList.addAll(list2);
-        }
-        return mergeList;
-    }
+	/**
+	 * 占座位
+	 * @param transactionId
+	 * @param screeningsId
+	 * @param travelDate
+	 * @param operatorId
+	 * @param occupyType
+	 * @param occupySeats
+	 */
+	private int occupyingSeats(String transactionId, Long screeningsId, Date travelDate, Long operatorId,
+			Integer occupyType, List<SeatChar> occupySeats) {
 
-    private int listSize(List list){
-        if (list != null && list.size() > 0){
-            return list.size();
-        }
-        return 0;
-    }
+		if (occupySeats == null || occupySeats.isEmpty()) {
+			return 0;
+		}
 
-    private void checkSeats(List<Long> seatIds, List<SeatChar> occupySeats, List<SeatChar> releaseSeats) {
-        ArrayList<Long> tmp = new ArrayList<>(seatIds);
-        removeSeatIdForList(occupySeats, tmp);
-        removeSeatIdForList(releaseSeats, tmp);
-        if (tmp.size() > 0) {
-            TheaterExceptionCode code = TheaterExceptionCode.SEAT_ILLEGAL_ID;
-            String msg = code.getTemplateMessage(seatIds);
-            throw new TheaterException(code.getCode(), msg);
-        }
-    }
+		List<SeatRecord> insertSeatRecords = new ArrayList<>(occupySeats.size());
 
-    private void removeSeatIdForList(List<SeatChar> occupySeats, ArrayList<Long> tmp) {
-        if (occupySeats != null && !occupySeats.isEmpty()){
-            for (SeatChar seat : occupySeats){
-                tmp.remove(seat.getId());
-            }
-        }
-    }
+		Date currentDate = new Date();
 
-    private void checkWhetherCanSeat(List<SeatRecord> existSeatRecords, Long operator, String transactionId){
-        if (existSeatRecords == null || existSeatRecords.isEmpty()) {
-            return;
-        }
+		for (SeatChar seat : occupySeats) {
+			Long seatId = seat.getId();
 
-        for (SeatRecord seatRecord : existSeatRecords){
-            Integer category = seatRecord.getCategory();
-            if (SeatRecordCategory.LockSeat.equals(category)){
-                if(!operator.equals(seatRecord.getOperatorId())){
-                    // 不是当前操作人锁定的座位
-                    TheaterExceptionCode code = TheaterExceptionCode.SEAT_RECORD_RULE_NOT_THE_OWNER;
-                    String msg = code.getTemplateMessage(seatRecord.getRecordId(), seatRecord.getOperatorId(), operator);
-                    throw new TheaterException(code.getCode(), msg);
-                }
-            } else if (SeatRecordCategory.PreemptionSeat.equals(category) || SeatRecordCategory.OccupyingSeat.equals(category)){
-                if (!transactionId.equals(seatRecord.getTransactionId())){
-                    // 不是当前交易ID预占的座位
-                    TheaterExceptionCode code = TheaterExceptionCode.SEAT_RECORD_RULE_NOT_THE_TRANSACTION;
-                    String msg = code.getTemplateMessage(seatRecord.getRecordId(), seatRecord.getTransactionId(), transactionId);
-                    throw new TheaterException(code.getCode(), msg);
-                }
-            } else {
-                throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_ILLEGAL_CATEGORY);
-            }
-        }
-    }
+			SeatRecord seatRecord = new SeatRecord();
+			seatRecord.setTravelDate(travelDate);
+			seatRecord.setTransactionId(transactionId);
+			seatRecord.setScreeningId(screeningsId);
+			seatRecord.setOperatorId(operatorId);
+			seatRecord.setCategory(occupyType);
+			seatRecord.setSeatId(seatId);
+			seatRecord.setState(1);
+			seatRecord.setCreateTime(currentDate);
+			seatRecord.setAreaId(seat.getAreaId());
+			seatRecord.setSeatName(seat.getSeatName());
 
-    private void cancelTheSeatRecord(List<SeatRecord> existSeatRecords) {
-        if (existSeatRecords == null || existSeatRecords.isEmpty()){
-            return;
-        }
-        Date currentDate = new Date();
-        List<SeatRecord> updateSeatRecords = new ArrayList<>(existSeatRecords.size());
-        for (SeatRecord seatRecord : existSeatRecords){
-            SeatRecord updateSeatRecord = new SeatRecord();
-            updateSeatRecord.setRecordId(seatRecord.getRecordId());
-            updateSeatRecord.setState(0);
-            updateSeatRecord.setUpdateTime(currentDate);
+			long newId = idGenerater.nextId();
+			seatRecord.setRecordId(newId);
 
-            Long recordUnique = recordUnique(seatRecord.getScreeningId(), seatRecord.getSeatId(), seatRecord.getTravelDate(), seatRecord.getRecordId().toString());
-            updateSeatRecord.setRecordUnique(recordUnique);
+			Long hashCode = SeatRecordUtil.recordUnique(screeningsId, seatId, travelDate, null);
+			seatRecord.setRecordUnique(hashCode);
 
-            updateSeatRecords.add(updateSeatRecord);
-        }
-        seatRecordWriteMapper.updateSeatRecords(updateSeatRecords);
-    }
+			insertSeatRecords.add(seatRecord);
+		}
 
-    private void occupyingSeats(AssignedOrder assignedOrder, List<SeatChar> occupySeats, Integer occupyType) {
-        if (occupySeats == null || occupySeats.isEmpty()){
-            return;
-        }
+		try {
+			seatRecordWriteMapper.insertBatchSeatRecord(insertSeatRecords);
+			return insertSeatRecords.size();
+		} catch (Throwable throwable) {
+			logger.error(throwable.getMessage(), throwable);
+			if (throwable instanceof DuplicateKeyException
+					|| throwable instanceof MySQLIntegrityConstraintViolationException) {
+				logger.error("尝试占座时失败，已经被其他人抢占。参数为 {}", JSONConverter.toJson(insertSeatRecords));
+				TheaterException theaterException = new TheaterException(
+						TheaterExceptionCode.SEAT_RECORD_OCCUPYING_FILURE);
+				throw theaterException;
+			}
+			throw new TheaterException(throwable);
+		}
+	}
 
-        List<SeatRecord> insertSeatRecords = new ArrayList<>(occupySeats.size());
+	/**
+	 * 更新待分配记录的已分配数量
+	 * @param assignedOrder
+	 */
+	private void updateAssignedOrderOccupiedNum(AssignedOrder assignedOrder) {
+		int latestOccupiedNum = seatRecordWriteMapper.countExistValidSeatRecordByTransactionScreeningsArea(
+				assignedOrder.getTransactionId(), assignedOrder.getScreeningsId(), assignedOrder.getAreaId());
 
-        Date currentDate = new Date();
-        for (SeatChar seat : occupySeats){
-            Long screeningsId = assignedOrder.getScreeningsId();
-            Long seatId = seat.getId();
-            Date travelDate = assignedOrder.getTravelDate();
+		if (latestOccupiedNum == assignedOrder.getUnOccupiedNum()) {
+			assignedOrder.setState(0);
+		} else if (latestOccupiedNum > assignedOrder.getUnOccupiedNum()) {
+			throw new TheaterException(TheaterExceptionCode.SEAT_RECORD_RULE_SEATS_GREATER_STOCK);
+		}
 
-            long newId = idGenerater.nextId();
-            SeatRecord seatRecord = new SeatRecord();
-            seatRecord.setRecordId(newId);
-            seatRecord.setTravelDate(travelDate);
-            seatRecord.setTransactionId(assignedOrder.getTransactionId());
-            seatRecord.setScreeningId(screeningsId);
-            seatRecord.setOperatorId(assignedOrder.getUserId());
-            seatRecord.setAreaId(assignedOrder.getAreaId());
-            seatRecord.setCategory(occupyType);
-            seatRecord.setSeatId(seatId);
-            seatRecord.setState(1);
-            seatRecord.setCreateTime(currentDate);
-            seatRecord.setSeatName(seat.getSeatName());
-
-            Long hashCode = recordUnique(screeningsId, seatId, travelDate, null);
-            seatRecord.setRecordUnique(hashCode);
-
-            insertSeatRecords.add(seatRecord);
-        }
-
-        try {
-            seatRecordWriteMapper.insertBatchSeatRecord(insertSeatRecords);
-        } catch (Throwable throwable){
-            logger.error(throwable.getMessage(), throwable);
-            if (throwable instanceof DuplicateKeyException || throwable instanceof MySQLIntegrityConstraintViolationException) {
-                logger.error("尝试占座时失败，已经被其他人抢占。参数为 {}", JSONConverter.toJson(insertSeatRecords));
-                TheaterException theaterException = new TheaterException(TheaterExceptionCode.SEAT_RECORD_OCCUPYING_FILURE);
-                throw theaterException;
-            }
-            throw new TheaterException(throwable);
-        }
-    }
-
-
-    private void saveAssignedOrder(AssignedOrder assignedOrder) {
-        if (assignedOrder.getAssignedId() == null && assignedOrder.getState() == 1) {
-            assignedOrderWriteEngine.createAssignedOrder(assignedOrder);
-        } else if (assignedOrder.getAssignedId() != null) {
-            assignedOrderWriteEngine.modifyAssignedOrder(assignedOrder);
-        }
-    }
-
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-    public Long recordUnique(Long screeningsId, Long seatId, Date travelDate, String random){
-        StringBuilder sb = new StringBuilder();
-        sb.append(screeningsId).append(":");
-        sb.append(seatId).append(":");
-        sb.append(sdf.format(travelDate)).append(":");
-        if (random != null){
-            sb.append(":");
-            sb.append(random);
-        }
-        Long recordUnique = CRCUtils.convertUniqueLong(sb.toString());
-        return recordUnique;
-    }
+		assignedOrder.setOccupiedNum(latestOccupiedNum);
+	}
 }

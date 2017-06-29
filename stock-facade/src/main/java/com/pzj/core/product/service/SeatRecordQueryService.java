@@ -131,7 +131,7 @@ public interface SeatRecordQueryService {
 	* @apiParam (SeatRespModel) {Long} areaId 区域id
 	* @apiParam (SeatRespModel) {Long} seatId 座位id
 	* @apiParam (SeatRespModel) {String} seatName 座位名称
-	* @apiParam (SeatRespModel) {Integer} showState 座位状态 2：已选；3：锁定；4：预选
+	* @apiParam (SeatRespModel) {Integer} showState 座位状态 20：已选；30：锁定；40：预选
 	* 
 	*  
 	* @apiSuccessExample {json} 成功响应数据
@@ -162,9 +162,33 @@ public interface SeatRecordQueryService {
 	Result<ArrayList<SeatRespModel>> querySeatStateByRecord(SeatRecordReqModel model, ServiceContext context);
 
 	/**
-	 * 通过交易ID，查询有效的占座记录
-	 * @param transactionId
-	 * @return
-	 */
+	* @api {dubbo} com.pzj.core.product.service.SeatRecordQueryService#queryValidSeatRecordByTransactionId 根据订单id查询座位
+	* @apiName 根据订单id查询座位
+	* @apiGroup SAAS&ERP 座位
+	* @apiVersion 1.2.0-SNAPSHOT
+	* @apiDescription 根据订单id查询座位
+	*
+	* @apiParam (请求参数) {String} transacTionId 订单id
+	* 
+	* @apiParamExample {json} 请求示例
+	*	{
+	*		"transacTionId":"MF123456"
+	*	}
+	*
+	* @apiParam (响应数据) {int} errorCode 返回结果码
+	* @apiParam (响应数据) {String} errorMsg 返回结果提示
+	* @apiParam (响应数据) {QueryValidSeatRecordResponse} data 结果集为集合;
+	*
+	*
+	* @apiParam (错误码) {int} 15001 参数错误
+	* @apiParam (错误码) {int} 15002 库存服务异常
+	* 
+	* @apiErrorExample {json} 异常响应数据
+	* {
+	*    "errorCode" : 15001,
+	*    "errorMsg":"参数错误"
+	* }
+	*
+	*/
 	Result<QueryValidSeatRecordResponse> queryValidSeatRecordByTransactionId(String transactionId);
 }

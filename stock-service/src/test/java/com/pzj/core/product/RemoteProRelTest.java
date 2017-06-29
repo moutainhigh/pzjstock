@@ -2,7 +2,10 @@ package com.pzj.core.product;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,14 +24,23 @@ import com.pzj.core.product.model.assign.CalendarAssignRespModel;
 import com.pzj.core.product.model.assign.TheaterAssignRespModel;
 import com.pzj.core.product.model.assign.TheaterScreeingAssignReqModel;
 import com.pzj.core.product.model.screeings.ArtSpuScreeingOrderModel;
+import com.pzj.core.product.model.screeings.ScreeingAreaReqModel;
+import com.pzj.core.product.model.screeings.ScreeingAreaRespModel;
 import com.pzj.core.product.model.screeings.ScreeingsModel;
+import com.pzj.core.product.model.screeings.ScreeingsQueryRequestModel;
 import com.pzj.core.product.model.screeings.TheaterScreeingOrderReqModel;
 import com.pzj.core.product.model.screeings.TheaterScreeingReqModel;
 import com.pzj.core.product.model.screeings.TheaterScreeingRespModel;
+import com.pzj.core.product.model.seat.SeatReqModel;
+import com.pzj.core.product.model.seat.SeatRespModel;
 import com.pzj.core.product.service.AreaQueryService;
 import com.pzj.core.product.service.AssignedOrderQueryService;
 import com.pzj.core.product.service.ScreeingsQueryService;
 import com.pzj.core.product.service.ScreeingsService;
+import com.pzj.core.product.service.SeatCharService;
+import com.pzj.core.stock.model.QueryStockByShowReqModel;
+import com.pzj.core.stock.model.StockModel;
+import com.pzj.core.stock.service.StockQueryService;
 import com.pzj.framework.context.Result;
 import com.pzj.framework.context.ServiceContext;
 import com.pzj.framework.converter.JSONConverter;
@@ -41,6 +53,8 @@ public class RemoteProRelTest {
 	private ScreeingsQueryService screeingsQueryService;
 	private AreaQueryService areaQueryService;
 	private AssignedOrderQueryService assignedOrderQueryService;
+	private StockQueryService stockQueryService;
+	private SeatCharService seatCharService;
 
 	static ApplicationContext context = null;
 
@@ -56,6 +70,9 @@ public class RemoteProRelTest {
 		screeingsQueryService = context.getBean(ScreeingsQueryService.class);
 		areaQueryService = context.getBean(AreaQueryService.class);
 		assignedOrderQueryService = context.getBean(AssignedOrderQueryService.class);
+		stockQueryService = context.getBean(StockQueryService.class);
+
+		seatCharService = context.getBean(SeatCharService.class);
 	}
 
 	//---------------------远程场次接口测试开始--------------------------------
@@ -66,7 +83,7 @@ public class RemoteProRelTest {
 		logger.info("testTheaterScreeingsDetail result : {}", JSONConverter.toJson(screeing));
 	}
 
-	@Test
+	//	@Test
 	public void testQueryTheaterScreeing() {
 		TheaterScreeingReqModel reqModel = new TheaterScreeingReqModel();
 		reqModel.setSupplierId(2216619741563731L);
@@ -86,6 +103,30 @@ public class RemoteProRelTest {
 				reqModel, null);
 
 		System.out.println("=========testQueryScreeingTheaterOrder" + JSONConverter.toJson(result));
+	}
+
+	//	@Test
+	public void areaScreeingQueryTest() {
+		Long screeingId = 1755L;
+		Long areaId = 3863390235656673L;
+		List<Long> screeingIds = new ArrayList<Long>();
+		List<Long> areaIds = new ArrayList<Long>();
+		screeingIds.add(screeingId);
+		areaIds.add(areaId);
+		ScreeingAreaReqModel reqModel = new ScreeingAreaReqModel();
+		reqModel.setAreaIds(areaIds);
+		reqModel.setScreeingIds(screeingIds);
+		Result<ScreeingAreaRespModel> result = screeingsQueryService.queryScreeingAreaBaseInfo(reqModel, null);
+		logger.info("queryScreeingAreaBaseInfo result : {}", JSONConverter.toJson(result));
+	}
+
+	//	@Test
+	public void queryScreeingByIdTest() {
+		Long screeingId = 1755L;
+		ScreeingsQueryRequestModel model = new ScreeingsQueryRequestModel();
+		model.setScreeingsId(screeingId);
+		Result<ScreeingsModel> result = screeingsQueryService.queryScreeingsById(model, new ServiceContext());
+		logger.info("queryScreeingsById result : {}", JSONConverter.toJson(result));
 	}
 
 	//---------------------远程区域接口测试开始--------------------------------
@@ -144,5 +185,34 @@ public class RemoteProRelTest {
 		Result<QueryResult<TheaterAreaRespModel>> result = areaQueryService.queryAreas(areaQueryReqModel,
 				new ServiceContext());
 		System.out.println(JSONConverter.toJson(result));
+	}
+
+	//	@Test
+	public void testQueryShowStock() {
+		QueryStockByShowReqModel reqModel = new QueryStockByShowReqModel();
+		reqModel.setAreaId(220L);
+		reqModel.setScreeingId(1221L);
+		Long time = 1501344000000L;
+		Date date = new Date(time);
+		reqModel.setShowTime(date);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(1501344000000L);
+		//		calendar
+		Result<StockModel> result = stockQueryService.queryStockByShow(reqModel, null);
+		System.out.println("==========testQueryShowStock==========" + JSONConverter.toJson(result));
+	}
+
+	//查询座位图入参：{"areaId":83,"operateUserId":4146470091948033,"scenicId":869740991778754560,"screeingId":63,"showTime":1496246400000}
+	@Test
+	public void queryAreaSeatchartTest() {
+		SeatReqModel seatReq = new SeatReqModel();
+		seatReq.setScenicId(869740991778754560L);
+		seatReq.setScreeingId(63L);
+		seatReq.setAreaId(83L);
+		seatReq.setShowTime(new Date());
+		seatReq.setOperateUserId(4146470091948033L);
+		Result<ArrayList<SeatRespModel>> result = seatCharService.queryNewestAreaSeatchart(seatReq, null);
+		System.out.println("queryNewestAreaSeatchart:" + JSONConverter.toJson(result));
 	}
 }

@@ -123,8 +123,9 @@ public interface StockRuleService {
 	*      "data" : 1
 	*   }
 	*    
-	* @apiParam (错误码) {int} 15001 参数错误
-	* @apiParam (错误码) {int} 15002 库存服务异常
+	* @apiParam (错误码) {int} 15001  参数错误
+	* @apiParam (错误码) {int} 15002  库存服务异常
+	* @apiParam (错误码) {int} 15110  库存规则绑定了上架的产品，不允许修改
 	* 
 	* @apiErrorExample {json} 异常响应数据
 	* {

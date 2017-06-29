@@ -34,7 +34,7 @@ public class SeatRecordQueryServiceImpl implements SeatRecordQueryService {
 	private SeatRecordQueryEngine seatRecordQueryEngine;
 
 	/** 
-	 * @see com.pzj.core.product.service.SeatRecordQueryService#queryAreaCollects(com.pzj.core.product.model.seatRecord.SeatRecordQueryReqModel, com.pzj.framework.context.ServiceContext)
+	 *
 	 */
 	@Override
 	public Result<ArrayList<AreaCollectRespModel>> queryAreaCollects(SeatRecordReqModel model,
@@ -78,7 +78,7 @@ public class SeatRecordQueryServiceImpl implements SeatRecordQueryService {
 			public QueryValidSeatRecordResponse call() {
 				return seatRecordQueryEngine.queryValidSeatRecordByTransactionId(transactionId);
 			}
-		}.run();
+		}.args(transactionId).run();
 		return result;
 	}
 

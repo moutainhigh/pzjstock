@@ -4,6 +4,7 @@
  */
 package com.pzj.core.stock.model;
 
+
 /**
  * 
  * @author Administrator
@@ -11,27 +12,47 @@ package com.pzj.core.stock.model;
  */
 public class UserSeatModel implements java.io.Serializable {
 
-    /**  */
-    private static final long serialVersionUID = -6018714260068138596L;
-    /**  库存ID*/
-    private Long              stockId;
-    /**  占座用户ID*/
-    private Long              operateUserId;
+	/**  */
+	private static final long serialVersionUID = -6018714260068138596L;
+	/**  库存ID*/
+	private Long stockId;
+	/**  占座用户ID*/
+	private Long operateUserId;
+	/**  场次ID*/
+	private Long screeingId;
+	/**  区域ID*/
+	private Long areaId;
 
-    public Long getStockId() {
-        return stockId;
-    }
+	public Long getStockId() {
+		return stockId;
+	}
 
-    public void setStockId(Long stockId) {
-        this.stockId = stockId;
-    }
+	public void setStockId(Long stockId) {
+		this.stockId = stockId;
+	}
 
-    public Long getOperateUserId() {
-        return operateUserId;
-    }
+	public Long getOperateUserId() {
+		return operateUserId;
+	}
 
-    public void setOperateUserId(Long operateUserId) {
-        this.operateUserId = operateUserId;
-    }
+	public void setOperateUserId(Long operateUserId) {
+		this.operateUserId = operateUserId;
+	}
+
+	public Long getScreeingId() {
+		return screeingId;
+	}
+
+	public void setScreeingId(Long screeingId) {
+		this.screeingId = screeingId;
+	}
+
+	public Long getAreaId() {
+		return areaId;
+	}
+
+	public void setAreaId(Long areaId) {
+		this.areaId = areaId;
+	}
 
 }

@@ -34,4 +34,6 @@ public interface AssignedOrderReadMapper {
 
 	List<AssignedOrder> queryCalendarAssignCount(@Param(value = "showStartDate") Date showStartDate,
 			@Param(value = "showEndDate") Date showEndDate);
+
+	List<AssignedOrder> selectAssignedOrderByTransaction(@Param("transactionId") String transactionId);
 }

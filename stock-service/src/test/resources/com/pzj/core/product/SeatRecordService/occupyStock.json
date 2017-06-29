@@ -1,19 +1,23 @@
 {
   "testData":{
-    "occupyStockReqs" : [{
-      "operator": 123,
-      "productId": 844834747972661249,
-      "stockRuleId": 2216619741565823,
-      "outQuantity": 5,
-      "travelDate": "2017-04-11 23:00:00",
-      "transactionId": "2234567890123459",
-      "screeningsId": 1750,
-      "areaId": 3798745846120450,
-      "occupyType": 30,
-      "occupySeatIds": [],
-      "releaseSeatIds" : [7],
-      "spuId" : 443
-    }]
+    "occupyStockReqs" : [
+      {
+        "operator": 2216619736763787,
+        "productId": 855377373078040576,
+        "stockRuleId": 2216619741565878,
+        "outQuantity": 1,
+        "travelDate": "2017-06-22 00:00:00",
+        "transactionId": "1173417043600025",
+        "screeningsId": 10,
+        "areaId": 9,
+        "occupyType": 20,
+        "occupySeatIds": [
+          4020992663879698
+        ],
+        "releaseSeatIds": [],
+        "spuId": 855377319512584192
+      }
+    ]
   },
   "testDataClass": "com.pzj.core.product.model.OccupyStockReqsModel"
 }

@@ -7,10 +7,10 @@ import com.pzj.core.product.common.exception.TheaterExceptionCode;
  * Created by Administrator on 2017-3-21.
  */
 public enum AreaSeatType {
-    // 用户自选
-    NoSeat(1, "用户自选"),
-    // 后台配座
-    RectangularSeat(2, "后台配座"),
+    // 无座位
+    NoSeat(1, "无座位"),
+    // 有座位，只支持矩形
+    RectangularSeat(2, "矩形座位"),
     ;
 
     private int value;

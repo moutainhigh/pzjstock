@@ -8,6 +8,7 @@
 		<result column="total_num" property="totalNum" />
 		<result column="used_num" property="usedNum" />
 		<result column="remain_num" property="remainNum" />
+		<result column="stock_time" property="stockTime" jdbcType="INTEGER" />
 	</resultMap>
  
 	

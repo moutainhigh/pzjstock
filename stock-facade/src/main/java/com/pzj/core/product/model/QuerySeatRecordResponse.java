@@ -44,7 +44,7 @@ public class QuerySeatRecordResponse implements Serializable {
      */
     private Long operatorId;
     /**
-     * 类别 1.待选 2.已占 3.锁定4.预选
+     * 类别 10.待选 20.已占 30.锁定40.预选
      */
     private Integer category;
     /**

@@ -43,4 +43,6 @@ public class StockRuleExceptionCode {
 	public static final int STOCK_RULE_STATE_INTO_ERR_CODE = 15109;
 	public static final String STOCK_RULE_STATE_INTO_ERR_MSG = "库存规则状态值传入不合法";
 
+	public static final int STOCK_RULE_REL_AVAI_PRODUCT_ERR_CODE = 15110;
+	public static final String STOCK_RULE_REL_AVAI_PRODUCT_ERR_MSG = "库存规则绑定了上架的产品，不允许修改";
 }

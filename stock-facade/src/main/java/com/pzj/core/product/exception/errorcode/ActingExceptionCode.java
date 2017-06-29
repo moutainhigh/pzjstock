@@ -16,7 +16,7 @@ public class ActingExceptionCode {
 	public static final String ACTING_STATE_ERR_MSG = "演艺数据状态不可用";
 
 	public static final int NOT_FOUND_ACTING_ERR_CODE = 15201;
-	public static final String NOT_FOUND_ACTING_ERR_MSG = "找不到对应的演绎信息";
+	public static final String NOT_FOUND_ACTING_ERR_MSG = "未找到演艺区域场次，请前往演艺管理进行相关设置";
 
 	public static final int NOT_FOUND_AREA_SCREEINGS_REL_ERR_CODE = 15202;
 	public static final String NOT_FOUND_AREA_SCREEINGS_REL_ERR_MSG = "找不到对应的区域及场次信息";
